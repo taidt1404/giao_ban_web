@@ -86,29 +86,41 @@ function createDataCell(
     fontSize?: number;
     spaceBefore?: number;
     spaceAfter?: number;
+    verticalAlign?: (typeof VerticalAlign.TOP) | (typeof VerticalAlign.CENTER) | (typeof VerticalAlign.BOTTOM);
   },
 ): TableCell {
-  const lines = Array.isArray(text) ? text : [text];
-  const paragraphs = lines.map(
-    (line) =>
-      new Paragraph({
-        alignment: options?.align ?? AlignmentType.CENTER,
-        spacing: {
-          before: options?.spaceBefore ?? 30,
-          after: options?.spaceAfter ?? 30,
-          line: 240,
-        },
-        children: [
-          new TextRun({
-            text: line,
-            bold: options?.bold ?? false,
-            color: options?.color,
-            font: FONT_FAMILY,
-            size: options?.fontSize ?? 19,
-          }),
-        ],
-      }),
-  );
+  const rawLines = Array.isArray(text)
+    ? text.flatMap((t) => (t || '').split(/\r?\n/))
+    : (text || '').split(/\r?\n/);
+
+  const isMultiLine = rawLines.length > 1;
+
+  const paragraphs = rawLines.map((line) => {
+    const isHeaderItem = line.trim().startsWith('*');
+    return new Paragraph({
+      alignment: options?.align ?? AlignmentType.CENTER,
+      spacing: {
+        before: options?.spaceBefore ?? (isHeaderItem ? 60 : isMultiLine ? 15 : 30),
+        after: options?.spaceAfter ?? (isMultiLine ? 15 : 30),
+        line: 240,
+      },
+      children: [
+        new TextRun({
+          text: line,
+          bold: options?.bold ?? (isHeaderItem ? true : false),
+          color: options?.color,
+          font: FONT_FAMILY,
+          size: options?.fontSize ?? 19,
+        }),
+      ],
+    });
+  });
+
+  const resolvedVAlign =
+    options?.verticalAlign ??
+    (isMultiLine || options?.align === AlignmentType.LEFT
+      ? VerticalAlign.TOP
+      : VerticalAlign.CENTER);
 
   return new TableCell({
     width: { size: widthPercent, type: WidthType.PERCENTAGE },
@@ -116,7 +128,7 @@ function createDataCell(
     verticalMerge: options?.verticalMerge,
     columnSpan: options?.columnSpan,
     shading: options?.fill ? { fill: options.fill } : undefined,
-    verticalAlign: VerticalAlign.CENTER,
+    verticalAlign: resolvedVAlign as any,
     children: paragraphs.length > 0 ? paragraphs : [new Paragraph({ text: '' })],
   });
 }
