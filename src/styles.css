@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Times New Roman", Times, serif;
   color: #182433;
   background: #eef1f5;
   font-synthesis: none;
@@ -7,8 +7,17 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 1200px; min-height: 100vh; background: #eef1f5; }
-button, input { font: inherit; }
+body {
+  margin: 0;
+  min-width: 1200px;
+  min-height: 100vh;
+  background: #eef1f5;
+  font-family: "Times New Roman", Times, serif;
+}
+button, input, textarea, select {
+  font-family: "Times New Roman", Times, serif;
+  font-size: inherit;
+}
 button { cursor: pointer; }
 
 .app-shell { min-height: 100vh; }
@@ -183,7 +192,7 @@ button { cursor: pointer; }
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
 }
 
 /* Styles cho Slide 3: Khám ngoài giờ */
@@ -202,7 +211,7 @@ button { cursor: pointer; }
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.8px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
 }
 
 /* Styles cho Slide 4: Tình hình người bệnh nội trú */
@@ -221,7 +230,7 @@ button { cursor: pointer; }
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
 }
 
 /* Styles cho Slide FreeText (Văn bản tự do) */
@@ -242,7 +251,7 @@ button { cursor: pointer; }
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
 }
 
 /* Styles cho Slide SOAP (Báo cáo ca bệnh lâm sàng) */
@@ -257,7 +266,7 @@ button { cursor: pointer; }
 }
 .soap-patient-header {
   font-size: clamp(16px, 1.8vw, 24px);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   color: #111;
   letter-spacing: 0.5px;
 }
@@ -279,7 +288,7 @@ button { cursor: pointer; }
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.8px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
 }
 .monitoring-table-wrap {
   width: min(100%, 780px);
@@ -289,7 +298,7 @@ button { cursor: pointer; }
 .monitoring-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: clamp(13px, 1.45vw, 19px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -326,8 +335,8 @@ button { cursor: pointer; }
   width: 100%;
   border-collapse: collapse;
   border: 1.5px solid #111;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(9.5px, 0.95vw, 13px);
+  font-family: "Times New Roman", Times, serif;
+  font-size: clamp(10.5px, 1.05vw, 14px);
   background: white;
 }
 .soap-table th {
@@ -360,7 +369,7 @@ button { cursor: pointer; }
   display: flex;
   flex-direction: column;
   gap: 20px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: clamp(14px, 1.45vw, 19px);
   line-height: 1.5;
   color: #111;
@@ -504,7 +513,7 @@ button { cursor: pointer; }
   width: 100%;
   border-collapse: collapse;
   border: 1.5px solid #111;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: clamp(12px, 1.22vw, 16px);
   background: white;
 }
@@ -615,7 +624,7 @@ button { cursor: pointer; }
   width: min(100%, 780px);
   border-collapse: collapse;
   border: 1.5px solid #111;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: clamp(13px, 1.35vw, 18px);
   background: white;
 }
@@ -654,7 +663,7 @@ button { cursor: pointer; }
   width: 100%;
   border-collapse: collapse;
   border: 1.5px solid #1a3258;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: clamp(11px, 1.15vw, 15px);
   background: white;
 }
