@@ -60,108 +60,47 @@ import {
   type PatientCaseTableSlideData,
 } from './data/patientCaseTableReport';
 
-const STORAGE_KEY = 'giao-ban-slide-1-v1';
-const OUTPATIENT_STORAGE_KEY = 'giao-ban-slide-2-v1';
-const AFTERHOURS_STORAGE_KEY = 'giao-ban-slide-3-v1';
-const INPATIENT_STORAGE_KEY = 'giao-ban-slide-4-v1';
-const FREETEXT_STORAGE_KEY = 'giao-ban-freetext-slides-v1';
-const SOAP_STORAGE_KEY = 'giao-ban-soap-slides-v1';
-const MONITORING_STORAGE_KEY = 'giao-ban-monitoring-slides-v1';
-const PATIENT_CASE_TABLE_STORAGE_KEY = 'giao-ban-patient-case-tables-v1';
+import {
+  DailyGiaoBanBundle,
+  getActiveDate,
+  setActiveDate,
+  getSavedDateList,
+  loadDailyBundle,
+  saveDailyBundle,
+  createDefaultBundle,
+  cloneBundleToDate,
+  findClosestPreviousDate,
+  exportAllDataAsJson,
+  downloadBackupFile,
+  importBackupFromFile,
+  importAllDataFromJson,
+  formatDisplayDate,
+} from './utils/dailyStorage';
+import DateSelectorBar from './components/DateSelectorBar';
+import UninitializedDateModal from './components/UninitializedDateModal';
 
-function loadReport(): ReportData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultReport;
-    return JSON.parse(raw) as ReportData;
-  } catch {
-    return defaultReport;
-  }
-}
-
-function loadOutpatientReport(): OutpatientReportData {
-  try {
-    const raw = localStorage.getItem(OUTPATIENT_STORAGE_KEY);
-    if (!raw) return defaultOutpatientReport;
-    return JSON.parse(raw) as OutpatientReportData;
-  } catch {
-    return defaultOutpatientReport;
-  }
-}
-
-function loadAfterHoursReport(): AfterHoursReportData {
-  try {
-    const raw = localStorage.getItem(AFTERHOURS_STORAGE_KEY);
-    if (!raw) return defaultAfterHoursReport;
-    return JSON.parse(raw) as AfterHoursReportData;
-  } catch {
-    return defaultAfterHoursReport;
-  }
-}
-
-function loadInpatientReport(): InpatientReportData {
-  try {
-    const raw = localStorage.getItem(INPATIENT_STORAGE_KEY);
-    if (!raw) return defaultInpatientReport;
-    return JSON.parse(raw) as InpatientReportData;
-  } catch {
-    return defaultInpatientReport;
-  }
-}
-
-function loadFreeTextSlides(): FreeTextSlideData[] {
-  try {
-    const raw = localStorage.getItem(FREETEXT_STORAGE_KEY);
-    if (!raw) return defaultFreeTextSlides;
-    const parsed = JSON.parse(raw) as FreeTextSlideData[];
-    return parsed.length > 0 ? parsed : defaultFreeTextSlides;
-  } catch {
-    return defaultFreeTextSlides;
-  }
-}
-
-function loadSoapSlides(): SoapSlideData[] {
-  try {
-    const raw = localStorage.getItem(SOAP_STORAGE_KEY);
-    if (!raw) return defaultSoapSlides;
-    const parsed = JSON.parse(raw) as SoapSlideData[];
-    return parsed.length > 0 ? parsed : defaultSoapSlides;
-  } catch {
-    return defaultSoapSlides;
-  }
-}
-
-function loadMonitoringReport(): MonitoringReportData {
-  try {
-    const raw = localStorage.getItem(MONITORING_STORAGE_KEY);
-    if (!raw) return defaultMonitoringReport;
-    return JSON.parse(raw) as MonitoringReportData;
-  } catch {
-    return defaultMonitoringReport;
-  }
-}
-
-function loadPatientCaseTableSlides(): PatientCaseTableSlideData[] {
-  try {
-    const raw = localStorage.getItem(PATIENT_CASE_TABLE_STORAGE_KEY);
-    if (!raw) return defaultPatientCaseTableSlides;
-    const parsed = JSON.parse(raw) as PatientCaseTableSlideData[];
-    return parsed.length > 0 ? parsed : defaultPatientCaseTableSlides;
-  } catch {
-    return defaultPatientCaseTableSlides;
-  }
-}
+// Nạp sẵn dữ liệu của ngày đang hoạt động (hỗ trợ auto-migration ngày đầu tiên)
+const initialLoad = loadDailyBundle(getActiveDate());
+const initialBundle = initialLoad.bundle;
 
 export default function App() {
-  const [report, setReport] = useState<ReportData>(loadReport);
-  const [outpatient, setOutpatient] = useState<OutpatientReportData>(loadOutpatientReport);
-  const [afterHours, setAfterHours] = useState<AfterHoursReportData>(loadAfterHoursReport);
-  const [inpatient, setInpatient] = useState<InpatientReportData>(loadInpatientReport);
-  const [freeTextSlides, setFreeTextSlides] = useState<FreeTextSlideData[]>(loadFreeTextSlides);
-  const [soapSlides, setSoapSlides] = useState<SoapSlideData[]>(loadSoapSlides);
-  const [monitoring, setMonitoring] = useState<MonitoringReportData>(loadMonitoringReport);
+  const [currentDate, setCurrentDate] = useState<string>(initialBundle.date);
+  const [savedDates, setSavedDates] = useState<string[]>(getSavedDateList);
+  const [uninitModal, setUninitModal] = useState<{
+    isOpen: boolean;
+    targetDate: string;
+    closestDate?: string;
+  } | null>(null);
+
+  const [report, setReport] = useState<ReportData>(initialBundle.report);
+  const [outpatient, setOutpatient] = useState<OutpatientReportData>(initialBundle.outpatient);
+  const [afterHours, setAfterHours] = useState<AfterHoursReportData>(initialBundle.afterHours);
+  const [inpatient, setInpatient] = useState<InpatientReportData>(initialBundle.inpatient);
+  const [freeTextSlides, setFreeTextSlides] = useState<FreeTextSlideData[]>(initialBundle.freeTextSlides);
+  const [soapSlides, setSoapSlides] = useState<SoapSlideData[]>(initialBundle.soapSlides);
+  const [monitoring, setMonitoring] = useState<MonitoringReportData>(initialBundle.monitoring);
   const [patientCaseTableSlides, setPatientCaseTableSlides] = useState<PatientCaseTableSlideData[]>(
-    loadPatientCaseTableSlides,
+    initialBundle.patientCaseTableSlides,
   );
 
   const totalSlideCount =
@@ -170,22 +109,53 @@ export default function App() {
   // Mở sẵn slide ca bệnh dạng bảng mới
   const [activeSlide, setActiveSlide] = useState<number>(totalSlideCount);
 
-  const [savedAt, setSavedAt] = useState<string>('Chưa lưu');
+  const [savedAt, setSavedAt] = useState<string>(
+    initialLoad.isExisting
+      ? `Bản lưu ngày ${formatDisplayDate(initialBundle.date)}`
+      : `Ngày mới (${formatDisplayDate(initialBundle.date)}) - Chưa lưu`,
+  );
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isEditorCollapsed, setIsEditorCollapsed] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
+  const applyBundleToStates = useCallback((bundle: DailyGiaoBanBundle) => {
+    setReport(bundle.report);
+    setOutpatient(bundle.outpatient);
+    setAfterHours(bundle.afterHours);
+    setInpatient(bundle.inpatient);
+    setFreeTextSlides(bundle.freeTextSlides);
+    setSoapSlides(bundle.soapSlides);
+    setMonitoring(bundle.monitoring);
+    setPatientCaseTableSlides(bundle.patientCaseTableSlides);
+  }, []);
+
+  const getCurrentBundle = useCallback((): DailyGiaoBanBundle => {
+    return {
+      date: currentDate,
+      report,
+      outpatient,
+      afterHours,
+      inpatient,
+      freeTextSlides,
+      soapSlides,
+      monitoring,
+      patientCaseTableSlides,
+      updatedAt: new Date().toISOString(),
+    };
+  }, [
+    currentDate,
+    report,
+    outpatient,
+    afterHours,
+    inpatient,
+    freeTextSlides,
+    soapSlides,
+    monitoring,
+    patientCaseTableSlides,
+  ]);
+
   useEffect(() => {
-    const raw1 = localStorage.getItem(STORAGE_KEY);
-    const raw2 = localStorage.getItem(OUTPATIENT_STORAGE_KEY);
-    const raw3 = localStorage.getItem(AFTERHOURS_STORAGE_KEY);
-    const raw4 = localStorage.getItem(INPATIENT_STORAGE_KEY);
-    const raw5 = localStorage.getItem(FREETEXT_STORAGE_KEY);
-    const raw6 = localStorage.getItem(SOAP_STORAGE_KEY);
-    const raw7 = localStorage.getItem(MONITORING_STORAGE_KEY);
-    const raw8 = localStorage.getItem(PATIENT_CASE_TABLE_STORAGE_KEY);
-    if (raw1 || raw2 || raw3 || raw4 || raw5 || raw6 || raw7 || raw8)
-      setSavedAt('Đã khôi phục bản lưu gần nhất');
+    setSavedDates(getSavedDateList());
   }, []);
 
   useEffect(() => {
@@ -246,23 +216,122 @@ export default function App() {
   }, [isFullscreen, totalSlideCount, enterPresentation, exitPresentation]);
 
   function handleSave() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(report));
-    localStorage.setItem(OUTPATIENT_STORAGE_KEY, JSON.stringify(outpatient));
-    localStorage.setItem(AFTERHOURS_STORAGE_KEY, JSON.stringify(afterHours));
-    localStorage.setItem(INPATIENT_STORAGE_KEY, JSON.stringify(inpatient));
-    localStorage.setItem(FREETEXT_STORAGE_KEY, JSON.stringify(freeTextSlides));
-    localStorage.setItem(SOAP_STORAGE_KEY, JSON.stringify(soapSlides));
-    localStorage.setItem(MONITORING_STORAGE_KEY, JSON.stringify(monitoring));
-    localStorage.setItem(PATIENT_CASE_TABLE_STORAGE_KEY, JSON.stringify(patientCaseTableSlides));
+    const bundle = getCurrentBundle();
+    saveDailyBundle(bundle);
+    setSavedDates(getSavedDateList());
     const now = new Date();
     setSavedAt(
       `Đã lưu ${now.toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-      })}`,
+      })} (Ngày ${formatDisplayDate(currentDate)})`,
     );
   }
+
+  // Xử lý chọn ngày từ DateSelectorBar
+  const handleSelectDate = useCallback(
+    (newDateStr: string) => {
+      // Tự động lưu ngày hiện tại trước khi chuyển
+      const currentBundle = getCurrentBundle();
+      saveDailyBundle(currentBundle);
+
+      const loaded = loadDailyBundle(newDateStr);
+      if (loaded.isExisting) {
+        applyBundleToStates(loaded.bundle);
+        setCurrentDate(newDateStr);
+        setActiveDate(newDateStr);
+        setSavedDates(getSavedDateList());
+        setSavedAt(`Bản lưu ngày ${formatDisplayDate(newDateStr)}`);
+      } else {
+        // Ngày chưa từng tạo -> mở modal hỏi người dùng
+        const closest = findClosestPreviousDate(newDateStr, getSavedDateList());
+        setUninitModal({
+          isOpen: true,
+          targetDate: newDateStr,
+          closestDate: closest,
+        });
+      }
+    },
+    [getCurrentBundle, applyBundleToStates],
+  );
+
+  // Modal: Xác nhận sao chép từ ngày cũ
+  const handleConfirmClone = useCallback(
+    (sourceDate: string) => {
+      if (!uninitModal) return;
+      const targetDate = uninitModal.targetDate;
+      const sourceLoaded = loadDailyBundle(sourceDate);
+      const cloned = cloneBundleToDate(sourceLoaded.bundle, targetDate);
+      saveDailyBundle(cloned);
+      applyBundleToStates(cloned);
+      setCurrentDate(targetDate);
+      setActiveDate(targetDate);
+      setSavedDates(getSavedDateList());
+      setSavedAt(`Đã kế thừa từ ngày ${formatDisplayDate(sourceDate)}`);
+      setUninitModal(null);
+    },
+    [uninitModal, applyBundleToStates],
+  );
+
+  // Modal: Tạo ngày mới trắng / mặc định
+  const handleConfirmDefault = useCallback(() => {
+    if (!uninitModal) return;
+    const targetDate = uninitModal.targetDate;
+    const defaultBundle = createDefaultBundle(targetDate);
+    saveDailyBundle(defaultBundle);
+    applyBundleToStates(defaultBundle);
+    setCurrentDate(targetDate);
+    setActiveDate(targetDate);
+    setSavedDates(getSavedDateList());
+    setSavedAt(`Ngày mới (${formatDisplayDate(targetDate)}) - Mặc định`);
+    setUninitModal(null);
+  }, [uninitModal, applyBundleToStates]);
+
+  // Sao chép nhanh ngày hiện tại sang một ngày cụ thể
+  const handleCloneCurrentToDate = useCallback(
+    (targetDate: string) => {
+      const currentBundle = getCurrentBundle();
+      saveDailyBundle(currentBundle);
+      const cloned = cloneBundleToDate(currentBundle, targetDate);
+      saveDailyBundle(cloned);
+      applyBundleToStates(cloned);
+      setCurrentDate(targetDate);
+      setActiveDate(targetDate);
+      setSavedDates(getSavedDateList());
+      setSavedAt(`Đã sao chép sang ngày ${formatDisplayDate(targetDate)}`);
+    },
+    [getCurrentBundle, applyBundleToStates],
+  );
+
+  // Sao lưu toàn bộ JSON
+  const handleExportBackup = useCallback(() => {
+    // Lưu ngày hiện tại trước
+    saveDailyBundle(getCurrentBundle());
+    downloadBackupFile();
+  }, [getCurrentBundle]);
+
+  // Nhập dữ liệu sao lưu JSON
+  const handleImportBackup = useCallback(
+    async (file: File) => {
+      try {
+        const result = await importBackupFromFile(file);
+        if (result.success) {
+          alert(result.message);
+          const reloaded = loadDailyBundle(currentDate);
+          applyBundleToStates(reloaded.bundle);
+          setSavedDates(getSavedDateList());
+          setSavedAt(`Đã nhập dữ liệu (${result.importedCount} ngày)`);
+        } else {
+          alert(result.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Tệp dữ liệu sao lưu không đúng định dạng!');
+      }
+    },
+    [currentDate, applyBundleToStates],
+  );
 
   function handleReset() {
     if (window.confirm('Bạn có chắc muốn khôi phục về dữ liệu mẫu mặc định của trang này?')) {
@@ -481,6 +550,15 @@ export default function App() {
             <div className="brand-subtitle">Bệnh viện đa khoa Hùng Cường</div>
           </div>
         </div>
+
+        <DateSelectorBar
+          currentDate={currentDate}
+          savedDates={savedDates}
+          onSelectDate={handleSelectDate}
+          onCloneCurrentToDate={handleCloneCurrentToDate}
+          onExportBackup={handleExportBackup}
+          onImportBackup={handleImportBackup}
+        />
 
         <div className="top-actions">
           <span className="save-status">{savedAt}</span>
@@ -867,6 +945,16 @@ export default function App() {
           )}
         </aside>
       </main>
+
+      {uninitModal?.isOpen && (
+        <UninitializedDateModal
+          targetDate={uninitModal.targetDate}
+          closestDate={uninitModal.closestDate}
+          onConfirmClone={handleConfirmClone}
+          onConfirmDefault={handleConfirmDefault}
+          onCancel={() => setUninitModal(null)}
+        />
+      )}
     </div>
   );
 }

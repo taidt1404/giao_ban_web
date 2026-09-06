@@ -292,12 +292,19 @@ export function cloneBundleToDate(
   }));
 
   // 2. Reset khám ngoài giờ
-  cloned.afterHours.emergency = 0;
-  cloned.afterHours.admissions = 0;
-  cloned.afterHours.prescriptions = {
-    insurance: 0,
-    service: 0,
-    chronic: 0,
+  cloned.afterHours = {
+    admitted: 0,
+    transferred: 0,
+    details: {
+      digestiveAndUrinary: 0,
+      respiratoryAndFever: 0,
+      trauma: 0,
+      obstetricsExam: 0,
+      obstetricsAdmitted: 0,
+      pediatricsExam: 0,
+      pediatricsAdmitted: 0,
+      otherExam: 0,
+    },
   };
 
   // 3. Kế thừa nội trú: "Hiện có" hôm qua -> "Cũ" hôm nay
@@ -325,14 +332,46 @@ export function cloneBundleToDate(
 /**
  * Tìm ngày có dữ liệu gần nhất trước một ngày cụ thể
  */
-export function findClosestPreviousDate(targetDate: string): string | undefined {
-  const savedDates = getSavedDateList();
+export function findClosestPreviousDate(
+  targetDate: string,
+  dateList?: string[],
+): string | undefined {
+  const savedDates = dateList || getSavedDateList();
   const pastDates = savedDates.filter((d) => d < targetDate);
   if (pastDates.length > 0) {
     return pastDates[0]; // Vì list đã được sắp xếp giảm dần nên phần tử đầu tiên là ngày gần nhất
   }
   // Nếu không có ngày trước đó, lấy ngày bất kỳ gần nhất
   return savedDates[0];
+}
+
+/**
+ * Tải file sao lưu JSON về máy tính
+ */
+export function downloadBackupFile(): void {
+  const jsonStr = exportAllDataAsJson();
+  const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `BaoCaoGiaoBan_Backup_${getTodayString()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Đọc file sao lưu JSON và nhập dữ liệu
+ */
+export async function importBackupFromFile(file: File): Promise<{
+  success: boolean;
+  message: string;
+  importedCount: number;
+  latestDate?: string;
+}> {
+  const text = await file.text();
+  return importAllDataFromJson(text);
 }
 
 /**
