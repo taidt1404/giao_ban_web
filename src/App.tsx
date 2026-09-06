@@ -30,6 +30,7 @@ import FreeTextSlidePreview from './components/FreeTextSlidePreview';
 import SoapSlidePreview from './components/SoapSlidePreview';
 import MonitoringSlidePreview from './components/MonitoringSlidePreview';
 import PatientCaseTableSlidePreview from './components/PatientCaseTableSlidePreview';
+import WordExportButton from './components/WordExportButton';
 import { defaultReport, type ReportData } from './data/defaultReport';
 import {
   defaultOutpatientReport,
@@ -514,7 +515,7 @@ export default function App() {
     setPatientCaseTableSlides(list);
   }
 
-  async function handleExportWord() {
+  async function handleExportWord(continuous: boolean = true) {
     try {
       setIsExporting(true);
       const { downloadGiaoBanWord } = await import('./utils/exportWord');
@@ -527,6 +528,7 @@ export default function App() {
         soapSlides,
         monitoring,
         patientCaseTableSlides,
+        { continuous },
       );
     } catch (err) {
       console.error('Lỗi xuất file Word:', err);
@@ -615,15 +617,11 @@ export default function App() {
             <Maximize2 size={16} />
             Trình chiếu (F5)
           </button>
-          <button
-            className="secondary-button word-btn"
-            onClick={handleExportWord}
-            disabled={isExporting}
-            title={`Tải toàn bộ báo cáo Word (${totalSlideCount} Slide)`}
-          >
-            {isExporting ? <Loader2 size={16} className="animate-spin" /> : <FileDown size={16} />}
-            Xuất Word
-          </button>
+          <WordExportButton
+            onExport={handleExportWord}
+            isExporting={isExporting}
+            totalSlideCount={totalSlideCount}
+          />
           <button className="secondary-button" onClick={handleReset}>
             <RotateCcw size={16} />
             Khôi phục mẫu
@@ -908,15 +906,11 @@ export default function App() {
                 <Maximize2 size={16} />
                 Trình chiếu
               </button>
-              <button
-                className="secondary-button word-btn"
-                onClick={handleExportWord}
-                disabled={isExporting}
-                title={`Tải toàn bộ báo cáo Word (${totalSlideCount} Slide)`}
-              >
-                {isExporting ? <Loader2 size={16} /> : <FileDown size={16} />}
-                Xuất Word
-              </button>
+              <WordExportButton
+                onExport={handleExportWord}
+                isExporting={isExporting}
+                totalSlideCount={totalSlideCount}
+              />
               <button className="secondary-button" onClick={() => window.print()}>
                 <Printer size={16} />
                 In / PDF

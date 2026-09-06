@@ -193,6 +193,10 @@ function createHeaderCell(
   });
 }
 
+export type ExportWordOptions = {
+  continuous?: boolean; // Mặc định true: in nối tiếp tiết kiệm giấy; false: mỗi slide 1 trang
+};
+
 export async function downloadGiaoBanWord(
   report: ReportData,
   outpatient?: OutpatientReportData,
@@ -202,7 +206,9 @@ export async function downloadGiaoBanWord(
   soapSlides?: SoapSlideData[],
   monitoring?: MonitoringReportData,
   patientCaseTableSlides?: PatientCaseTableSlideData[],
+  options?: ExportWordOptions,
 ): Promise<void> {
+  const continuous = options?.continuous ?? true;
   const dateInfo = parseDate(report.reportDate);
 
   // Tính tổng PK nội
@@ -421,12 +427,16 @@ export async function downloadGiaoBanWord(
   // ==========================================
   if (outpatient) {
     const op = outpatient;
+    if (!continuous) {
+      docChildren.push(
+        new Paragraph({
+          children: [new PageBreak()],
+        }),
+      );
+    }
     docChildren.push(
       new Paragraph({
-        children: [new PageBreak()],
-      }),
-      new Paragraph({
-        spacing: { before: 100, after: 140 },
+        spacing: { before: continuous ? 240 : 100, after: 140 },
         children: [
           new TextRun({
             text: 'II. TÌNH HÌNH NGƯỜI BỆNH NGOẠI TRÚ (SLIDE 2)',
@@ -740,12 +750,16 @@ export async function downloadGiaoBanWord(
     const prescriptionsTotal = calculatePrescriptionsTotal(ah.details);
     const totalExams = calculateTotalExams(ah);
 
+    if (!continuous) {
+      docChildren.push(
+        new Paragraph({
+          children: [new PageBreak()],
+        }),
+      );
+    }
     docChildren.push(
       new Paragraph({
-        children: [new PageBreak()],
-      }),
-      new Paragraph({
-        spacing: { before: 100, after: 140 },
+        spacing: { before: continuous ? 240 : 100, after: 140 },
         children: [
           new TextRun({
             text: 'III. KHÁM NGOÀI GIỜ (SLIDE 3)',
@@ -873,12 +887,16 @@ export async function downloadGiaoBanWord(
 
     const sumDiff = calculateBedDifference(sumBeds, sumCur);
 
+    if (!continuous) {
+      docChildren.push(
+        new Paragraph({
+          children: [new PageBreak()],
+        }),
+      );
+    }
     docChildren.push(
       new Paragraph({
-        children: [new PageBreak()],
-      }),
-      new Paragraph({
-        spacing: { before: 100, after: 140 },
+        spacing: { before: continuous ? 240 : 100, after: 140 },
         children: [
           new TextRun({
             text: 'IV. TÌNH HÌNH NGƯỜI BỆNH NỘI TRÚ (SLIDE 4)',
@@ -930,12 +948,17 @@ export async function downloadGiaoBanWord(
   // ==========================================
   if (freeTextSlides && freeTextSlides.length > 0) {
     freeTextSlides.forEach((slide) => {
-      const slideParagraphs: Paragraph[] = [
+      const slideParagraphs: Paragraph[] = [];
+      if (!continuous) {
+        slideParagraphs.push(
+          new Paragraph({
+            children: [new PageBreak()],
+          }),
+        );
+      }
+      slideParagraphs.push(
         new Paragraph({
-          children: [new PageBreak()],
-        }),
-        new Paragraph({
-          spacing: { before: 100, after: 180 },
+          spacing: { before: continuous ? 240 : 100, after: 180 },
           children: [
             new TextRun({
               text: slide.title || 'TIÊU ĐỀ NỘI DUNG',
@@ -946,7 +969,7 @@ export async function downloadGiaoBanWord(
             }),
           ],
         }),
-      ];
+      );
 
       slide.items.forEach((item, index) => {
         const lines = item.content.split('\n');
@@ -1038,13 +1061,17 @@ export async function downloadGiaoBanWord(
         );
       });
 
+      if (!continuous) {
+        docChildren.push(
+          new Paragraph({
+            children: [new PageBreak()],
+          }),
+        );
+      }
       docChildren.push(
         new Paragraph({
-          children: [new PageBreak()],
-        }),
-        new Paragraph({
           alignment: AlignmentType.CENTER,
-          spacing: { before: 100, after: 150 },
+          spacing: { before: continuous ? 240 : 100, after: 150 },
           children: [
             new TextRun({
               text: soap.patientHeader || 'BÁO CÁO CA BỆNH',
@@ -1103,13 +1130,17 @@ export async function downloadGiaoBanWord(
       );
     });
 
+    if (!continuous) {
+      docChildren.push(
+        new Paragraph({
+          children: [new PageBreak()],
+        }),
+      );
+    }
     docChildren.push(
       new Paragraph({
-        children: [new PageBreak()],
-      }),
-      new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 120, after: 180 },
+        spacing: { before: continuous ? 240 : 120, after: 180 },
         children: [
           new TextRun({
             text: monitoring.title || 'VIII. BỆNH NHÂN THEO DÕI',
@@ -1222,17 +1253,20 @@ export async function downloadGiaoBanWord(
         );
       });
 
-      const slideChildren: (Paragraph | Table)[] = [
-        new Paragraph({
-          children: [new PageBreak()],
-        }),
-      ];
+      const slideChildren: (Paragraph | Table)[] = [];
+      if (!continuous) {
+        slideChildren.push(
+          new Paragraph({
+            children: [new PageBreak()],
+          }),
+        );
+      }
 
       if (slide.title) {
         slideChildren.push(
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { before: 100, after: 150 },
+            spacing: { before: continuous ? 240 : 100, after: 150 },
             children: [
               new TextRun({
                 text: slide.title,
@@ -1364,7 +1398,8 @@ export async function downloadGiaoBanWord(
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `Bao-cao-giao-ban-toan-bo-${report.reportDate || 'ngay'}.docx`;
+  const suffix = continuous ? '' : '-tung-trang';
+  link.download = `Bao-cao-giao-ban-${report.reportDate || 'ngay'}${suffix}.docx`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
