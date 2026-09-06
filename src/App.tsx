@@ -202,9 +202,20 @@ export default function App() {
       } else if (e.key === 'Escape' && isFullscreen) {
         exitPresentation();
       } else if (isFullscreen) {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        if (
+          e.key === 'ArrowRight' ||
+          e.key === 'ArrowDown' ||
+          e.key === 'PageDown' ||
+          e.key === ' ' ||
+          e.key === 'Enter'
+        ) {
           setActiveSlide((prev) => (prev < totalSlideCount ? prev + 1 : 1));
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        } else if (
+          e.key === 'ArrowLeft' ||
+          e.key === 'ArrowUp' ||
+          e.key === 'PageUp' ||
+          e.key === 'Backspace'
+        ) {
           setActiveSlide((prev) => (prev > 1 ? prev - 1 : totalSlideCount));
         }
       }
@@ -214,6 +225,40 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isFullscreen, totalSlideCount, enterPresentation, exitPresentation]);
+
+  // Điều hướng chuyển slide bằng chuột khi đang trình chiếu: Chuột trái = Next, Chuột phải = Lùi
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    function handleMouseDown(e: MouseEvent) {
+      // Bỏ qua nếu click vào nút thoát trình chiếu
+      if ((e.target as HTMLElement).closest('.exit-presentation-btn')) {
+        return;
+      }
+
+      if (e.button === 0) {
+        // Chuột trái: Chuyển tiếp (Next slide)
+        setActiveSlide((prev) => (prev < totalSlideCount ? prev + 1 : 1));
+      } else if (e.button === 2) {
+        // Chuột phải: Lùi lại (Previous slide)
+        e.preventDefault();
+        setActiveSlide((prev) => (prev > 1 ? prev - 1 : totalSlideCount));
+      }
+    }
+
+    function handleContextMenu(e: MouseEvent) {
+      // Chặn hiển thị menu ngữ cảnh chuột phải của trình duyệt khi đang trình chiếu
+      e.preventDefault();
+    }
+
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [isFullscreen, totalSlideCount]);
 
   function handleSave() {
     const bundle = getCurrentBundle();
@@ -532,7 +577,7 @@ export default function App() {
           type="button"
           className="exit-presentation-btn"
           onClick={exitPresentation}
-          title="Thoát trình chiếu"
+          title="Thoát trình chiếu (Esc) • Chuột trái: Tới slide • Chuột phải: Lùi slide"
         >
           <Minimize2 size={16} />
           <span>Thoát trình chiếu (Trang {activeSlide}/{totalSlideCount})</span>
