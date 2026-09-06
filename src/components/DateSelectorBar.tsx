@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Calendar,
   Download,
   Upload,
@@ -29,6 +30,7 @@ export default function DateSelectorBar({
   onCloneCurrentToDate,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showClonePrompt, setShowClonePrompt] = useState(false);
   const [cloneTargetDate, setCloneTargetDate] = useState('');
@@ -36,6 +38,21 @@ export default function DateSelectorBar({
   const todayStr = getTodayString();
   const isToday = currentDate === todayStr;
   const isSavedInStore = savedDates.includes(currentDate);
+
+  // Mở popup chọn lịch trình duyệt
+  function handleOpenDatePicker() {
+    if (dateInputRef.current) {
+      if (typeof dateInputRef.current.showPicker === 'function') {
+        try {
+          dateInputRef.current.showPicker();
+          return;
+        } catch {
+          // ignore
+        }
+      }
+      dateInputRef.current.focus();
+    }
+  }
 
   // Tính ngày trước đó và ngày sau đó
   function shiftDate(offsetDays: number) {
@@ -92,9 +109,18 @@ export default function DateSelectorBar({
           <ChevronLeft size={16} />
         </button>
 
-        <div className="date-picker-wrapper">
+        <div
+          className="date-picker-wrapper"
+          onClick={handleOpenDatePicker}
+          title="Bấm vào đây để mở lịch chọn ngày bất kỳ (tháng trước, năm trước...)"
+        >
           <Calendar size={15} className="date-picker-icon" />
+          <span className="date-display-badge">
+            {formatDisplayDate(currentDate)}
+          </span>
+          <ChevronDown size={14} className="date-picker-arrow" />
           <input
+            ref={dateInputRef}
             type="date"
             className="date-picker-input"
             value={currentDate}
@@ -103,11 +129,9 @@ export default function DateSelectorBar({
                 onSelectDate(e.target.value);
               }
             }}
+            onClick={(e) => e.stopPropagation()}
             title="Bấm để chọn ngày trực bất kỳ"
           />
-          <span className="date-display-badge">
-            {formatDisplayDate(currentDate)}
-          </span>
         </div>
 
         <button
@@ -159,14 +183,44 @@ export default function DateSelectorBar({
           type="button"
           className="date-tools-toggle-btn"
           onClick={() => setShowMenu(!showMenu)}
-          title="Công cụ sao lưu & nhân bản dữ liệu"
+          title="Xem danh sách các ngày đã có báo cáo & công cụ sao lưu"
         >
-          ⚙ Quản lý ngày
+          ⚙ Quản lý ngày ({savedDates.length})
         </button>
 
         {showMenu && (
           <div className="date-tools-menu" onMouseLeave={() => setShowMenu(false)}>
-            <div className="menu-header">Lịch sử ({savedDates.length} ngày đã lưu)</div>
+            <div className="menu-header">DANH SÁCH NGÀY ĐÃ LƯU ({savedDates.length})</div>
+
+            <div className="saved-dates-list-scroll">
+              {savedDates.length === 0 ? (
+                <div className="empty-saved-hint">Chưa có ngày nào được lưu</div>
+              ) : (
+                savedDates.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className={`menu-item-btn saved-date-pick-btn ${
+                      d === currentDate ? 'is-current' : ''
+                    }`}
+                    onClick={() => {
+                      setShowMenu(false);
+                      onSelectDate(d);
+                    }}
+                  >
+                    <Calendar size={13} />
+                    <span>Ngày {formatDisplayDate(d)}</span>
+                    {d === currentDate && (
+                      <span className="active-tag">Đang xem</span>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+
+            <div className="menu-header" style={{ marginTop: '8px' }}>
+              CÔNG CỤ SAO LƯU &amp; NHÂN BẢN
+            </div>
 
             <button
               type="button"

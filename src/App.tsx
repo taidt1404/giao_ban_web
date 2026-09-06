@@ -950,6 +950,7 @@ export default function App() {
         <UninitializedDateModal
           targetDate={uninitModal.targetDate}
           closestDate={uninitModal.closestDate}
+          savedDates={savedDates}
           onConfirmClone={handleConfirmClone}
           onConfirmDefault={handleConfirmDefault}
           onCancel={() => setUninitModal(null)}
