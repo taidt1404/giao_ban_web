@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { Plus, Trash2, PlusCircle } from 'lucide-react';
 import type {
   PatientCaseTableSlideData,
@@ -207,11 +208,11 @@ export default function EditorPanelPatientCaseTable({
                     <label style={{ fontSize: '10px', color: '#64748b' }}>
                       Họ tên / tuổi / địa chỉ / giờ (dòng 1 in đậm):
                     </label>
-                    <textarea
-                      rows={3}
+                    <AutoExpandTextarea
                       value={row.patientInfo}
+                      minRows={3}
                       placeholder="VD: TRẦN VĂN THỎA 56 tuổi&#10;Thôn Lương Phong, Xã Hiệp Hoà&#10;16H50"
-                      onChange={(e) => handleRowChange(index, 'patientInfo', e.target.value)}
+                      onChange={(val) => handleRowChange(index, 'patientInfo', val)}
                     />
                   </div>
                 </div>
@@ -221,11 +222,11 @@ export default function EditorPanelPatientCaseTable({
                   <label style={{ fontSize: '10px', color: '#64748b' }}>
                     Lý do khám / chẩn đoán sơ bộ / diễn biến:
                   </label>
-                  <textarea
-                    rows={4}
+                  <AutoExpandTextarea
                     value={row.reasonAndExam}
+                    minRows={4}
                     placeholder="LDK, triệu chứng, khám thực thể..."
-                    onChange={(e) => handleRowChange(index, 'reasonAndExam', e.target.value)}
+                    onChange={(val) => handleRowChange(index, 'reasonAndExam', val)}
                   />
                 </div>
 
@@ -234,11 +235,11 @@ export default function EditorPanelPatientCaseTable({
                   <label style={{ fontSize: '10px', color: '#64748b' }}>
                     Cận lâm sàng (kết quả chụp, xét nghiệm...):
                   </label>
-                  <textarea
-                    rows={3}
+                  <AutoExpandTextarea
                     value={row.subclinical}
+                    minRows={3}
                     placeholder="MRI, X-quang, xét nghiệm máu..."
-                    onChange={(e) => handleRowChange(index, 'subclinical', e.target.value)}
+                    onChange={(val) => handleRowChange(index, 'subclinical', val)}
                   />
                 </div>
 
@@ -246,20 +247,20 @@ export default function EditorPanelPatientCaseTable({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <div>
                     <label style={{ fontSize: '10px', color: '#64748b' }}>Chẩn đoán:</label>
-                    <textarea
-                      rows={3}
+                    <AutoExpandTextarea
                       value={row.diagnosis}
+                      minRows={2}
                       placeholder="Chẩn đoán xác định / theo dõi..."
-                      onChange={(e) => handleRowChange(index, 'diagnosis', e.target.value)}
+                      onChange={(val) => handleRowChange(index, 'diagnosis', val)}
                     />
                   </div>
                   <div>
                     <label style={{ fontSize: '10px', color: '#64748b' }}>Xử trí:</label>
-                    <textarea
-                      rows={3}
+                    <AutoExpandTextarea
                       value={row.treatment}
+                      minRows={2}
                       placeholder="Tư vấn nhập viện, kê đơn..."
-                      onChange={(e) => handleRowChange(index, 'treatment', e.target.value)}
+                      onChange={(val) => handleRowChange(index, 'treatment', val)}
                     />
                   </div>
                 </div>
@@ -278,5 +279,39 @@ export default function EditorPanelPatientCaseTable({
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Textarea tự động co giãn chiều cao theo số lượng chữ (không cần kéo tay)
+ */
+function AutoExpandTextarea({
+  value,
+  placeholder,
+  onChange,
+  minRows = 2,
+}: {
+  value: string;
+  placeholder?: string;
+  onChange: (val: string) => void;
+  minRows?: number;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = `${Math.max(ref.current.scrollHeight + 2, minRows * 22)}px`;
+    }
+  }, [value, minRows]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      placeholder={placeholder}
+      style={{ resize: 'vertical' }}
+      onChange={(e) => onChange(e.target.value)}
+    />
   );
 }

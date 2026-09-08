@@ -1009,7 +1009,14 @@ export default function App() {
               <MonitoringSlidePreview data={monitoring} />
             )}
             {isCaseTableSlide && currentCaseTableSlide && (
-              <PatientCaseTableSlidePreview data={currentCaseTableSlide} />
+              <PatientCaseTableSlidePreview
+                data={currentCaseTableSlide}
+                onChange={
+                  isFullscreen
+                    ? undefined
+                    : (next) => handleUpdateCaseTableSlide(caseTableIndex, next)
+                }
+              />
             )}
           </div>
         </section>

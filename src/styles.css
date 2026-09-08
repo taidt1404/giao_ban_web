@@ -1163,6 +1163,134 @@ button { cursor: pointer; }
 }
 
 /* =========================================
+   INLINE EDITING FOR CASE TABLE SLIDE
+   ========================================= */
+.case-table-title-input {
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  color: #c00000;
+  text-align: center;
+  border: 2px solid #2f73da;
+  border-radius: 6px;
+  padding: 4px 12px;
+  width: 70%;
+  outline: none;
+  background: #ffffff;
+}
+
+.case-data-table td.editable-cell {
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.case-data-table td.editable-cell:hover {
+  background-color: #f0f7ff;
+}
+
+.case-data-table td.editable-cell.is-editing {
+  padding: 2px !important;
+  background-color: #ffffff;
+}
+
+.case-cell-editor {
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14.5px;
+  line-height: 1.35;
+  color: #000000;
+  padding: 6px 8px;
+  border: 2px solid #2f73da;
+  border-radius: 4px;
+  background: #ffffff;
+  outline: none;
+  resize: vertical;
+}
+
+.case-cell-input-stt {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Times New Roman', Times, serif;
+  border: 2px solid #2f73da;
+  border-radius: 4px;
+  padding: 4px;
+  outline: none;
+  background: #ffffff;
+}
+
+.empty-cell-hint {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.case-table-inline-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+
+.case-table-add-row-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #257444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.case-table-add-row-btn:hover {
+  background: #1e5e37;
+}
+
+.case-table-inline-hint {
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.row-delete-hover-btn {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: 3px;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.case-data-table tr.case-table-row:hover .row-delete-hover-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row-delete-hover-btn:hover {
+  background: #fecaca;
+  color: #b91c1c;
+}
+
+/* =========================================
    DATE SELECTOR BAR & HISTORICAL SNAPSHOTS
    ========================================= */
 .date-selector-bar {
