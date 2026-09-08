@@ -45,9 +45,10 @@ export const defaultOutpatientReport: OutpatientReportData = {
   },
   internalClinics: [
     { id: 'pk201', name: 'PK 201', total: 12, admitted: 1 },
-    { id: 'pk204', name: 'PK 204', total: 0, admitted: 0 },
     { id: 'pk202', name: 'PK 202', total: 0, admitted: 0 },
+    { id: 'pk204', name: 'PK 204', total: 0, admitted: 0 },
     { id: 'pk205', name: 'PK 205', total: 18, admitted: 1 },
+    { id: 'pk210', name: 'PK 210', total: 0, admitted: 0 },
     { id: 'pk308', name: 'PK 308', total: 16, admitted: 1 },
     { id: 'pk309', name: 'PK 309', total: 0, admitted: 0 },
   ],

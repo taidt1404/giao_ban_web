@@ -45,7 +45,7 @@ export default function Slide2Preview({ data }: Props) {
               <tr>
                 <td className="cell-label font-bold">Tổng số/vào viện</td>
                 <td className="cell-value font-bold">{data.general.totalAndAdmitted}</td>
-                <td rowSpan={7} className="cell-group font-bold">
+                <td rowSpan={8} className="cell-group font-bold">
                   PK Nội
                 </td>
                 <td className="cell-clinic font-bold">Tổng</td>
@@ -69,11 +69,11 @@ export default function Slide2Preview({ data }: Props) {
                 </td>
               </tr>
 
-              {/* Hàng 3: Dịch vụ & PK 204 */}
+              {/* Hàng 3: Dịch vụ & PK 202 */}
               <tr>
                 <td className="cell-label font-bold">Dịch vụ</td>
                 <td className="cell-value font-bold">{data.general.service}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[1]?.name || 'PK 204'}</td>
+                <td className="cell-clinic font-bold">{data.internalClinics[1]?.name || 'PK 202'}</td>
                 <td className="cell-value font-bold">{data.internalClinics[1]?.total ?? 0}</td>
                 <td className="cell-value font-bold">{data.internalClinics[1]?.admitted ?? 0}</td>
                 <td className="cell-value font-bold">
@@ -84,11 +84,11 @@ export default function Slide2Preview({ data }: Props) {
                 </td>
               </tr>
 
-              {/* Hàng 4: Khám yêu cầu & PK 202 */}
+              {/* Hàng 4: Khám yêu cầu & PK 204 */}
               <tr>
                 <td className="cell-label font-bold">Khám yêu cầu</td>
                 <td className="cell-value font-bold">{data.general.onDemand}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[2]?.name || 'PK 202'}</td>
+                <td className="cell-clinic font-bold">{data.internalClinics[2]?.name || 'PK 204'}</td>
                 <td className="cell-value font-bold">{data.internalClinics[2]?.total ?? 0}</td>
                 <td className="cell-value font-bold">{data.internalClinics[2]?.admitted ?? 0}</td>
                 <td className="cell-value font-bold">
@@ -114,15 +114,15 @@ export default function Slide2Preview({ data }: Props) {
                 </td>
               </tr>
 
-              {/* Hàng 6: Tăng huyết áp (rowSpan 2) & PK 308 */}
+              {/* Hàng 6: Tăng huyết áp (rowSpan 3) & PK 210 */}
               <tr>
-                <td rowSpan={2} className="cell-label font-bold cell-vcenter">
+                <td rowSpan={3} className="cell-label font-bold cell-vcenter">
                   Tăng huyết áp
                 </td>
-                <td rowSpan={2} className="cell-value font-bold cell-vcenter">
+                <td rowSpan={3} className="cell-value font-bold cell-vcenter">
                   {data.general.hypertension}
                 </td>
-                <td className="cell-clinic font-bold">{data.internalClinics[4]?.name || 'PK 308'}</td>
+                <td className="cell-clinic font-bold">{data.internalClinics[4]?.name || 'PK 210'}</td>
                 <td className="cell-value font-bold">{data.internalClinics[4]?.total ?? 0}</td>
                 <td className="cell-value font-bold">{data.internalClinics[4]?.admitted ?? 0}</td>
                 <td className="cell-value font-bold">
@@ -133,15 +133,28 @@ export default function Slide2Preview({ data }: Props) {
                 </td>
               </tr>
 
-              {/* Hàng 7: PK 309 */}
+              {/* Hàng 7: PK 308 */}
               <tr>
-                <td className="cell-clinic font-bold">{data.internalClinics[5]?.name || 'PK 309'}</td>
+                <td className="cell-clinic font-bold">{data.internalClinics[5]?.name || 'PK 308'}</td>
                 <td className="cell-value font-bold">{data.internalClinics[5]?.total ?? 0}</td>
                 <td className="cell-value font-bold">{data.internalClinics[5]?.admitted ?? 0}</td>
                 <td className="cell-value font-bold">
                   {calculateRate(
                     data.internalClinics[5]?.admitted ?? 0,
                     data.internalClinics[5]?.total ?? 0,
+                  )}
+                </td>
+              </tr>
+
+              {/* Hàng 8: PK 309 */}
+              <tr>
+                <td className="cell-clinic font-bold">{data.internalClinics[6]?.name || 'PK 309'}</td>
+                <td className="cell-value font-bold">{data.internalClinics[6]?.total ?? 0}</td>
+                <td className="cell-value font-bold">{data.internalClinics[6]?.admitted ?? 0}</td>
+                <td className="cell-value font-bold">
+                  {calculateRate(
+                    data.internalClinics[6]?.admitted ?? 0,
+                    data.internalClinics[6]?.total ?? 0,
                   )}
                 </td>
               </tr>

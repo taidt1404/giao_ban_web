@@ -80,12 +80,14 @@ import {
   apiGetServerDates,
   apiGetServerBundle,
   apiSyncLocalToServer,
+  ensureOutpatientClinics,
 } from './utils/dailyStorage';
 import DateSelectorBar from './components/DateSelectorBar';
 import UninitializedDateModal from './components/UninitializedDateModal';
 
 // Nạp sẵn dữ liệu của ngày đang hoạt động (hỗ trợ auto-migration ngày đầu tiên)
 const initialLoad = loadDailyBundle(getActiveDate());
+ensureOutpatientClinics(initialLoad.bundle.outpatient);
 const initialBundle = initialLoad.bundle;
 
 export default function App() {
@@ -111,8 +113,8 @@ export default function App() {
   const totalSlideCount =
     4 + freeTextSlides.length + soapSlides.length + 1 + patientCaseTableSlides.length;
 
-  // Mở sẵn slide ca bệnh dạng bảng mới
-  const [activeSlide, setActiveSlide] = useState<number>(totalSlideCount);
+  // Mặc định khi vào trang mở Slide 1 (Thông tin kíp trực)
+  const [activeSlide, setActiveSlide] = useState<number>(1);
 
   const [savedAt, setSavedAt] = useState<string>(
     initialLoad.isExisting
@@ -124,6 +126,7 @@ export default function App() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
   const applyBundleToStates = useCallback((bundle: DailyGiaoBanBundle) => {
+    ensureOutpatientClinics(bundle.outpatient);
     setReport(bundle.report);
     setOutpatient(bundle.outpatient);
     setAfterHours(bundle.afterHours);

@@ -498,7 +498,7 @@ export async function downloadGiaoBanWord(
               createDataCell('Dịch vụ', 18, { align: AlignmentType.LEFT }),
               createDataCell(String(op.general.service), 12),
               createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[1]?.name || 'PK 204', 13),
+              createDataCell(op.internalClinics[1]?.name || 'PK 202', 13),
               createDataCell(String(op.internalClinics[1]?.total ?? 0), 14),
               createDataCell(String(op.internalClinics[1]?.admitted ?? 0), 14),
               createDataCell(
@@ -515,7 +515,7 @@ export async function downloadGiaoBanWord(
               createDataCell('Khám yêu cầu', 18, { align: AlignmentType.LEFT }),
               createDataCell(String(op.general.onDemand), 12),
               createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[2]?.name || 'PK 202', 13),
+              createDataCell(op.internalClinics[2]?.name || 'PK 204', 13),
               createDataCell(String(op.internalClinics[2]?.total ?? 0), 14),
               createDataCell(String(op.internalClinics[2]?.admitted ?? 0), 14),
               createDataCell(
@@ -554,7 +554,7 @@ export async function downloadGiaoBanWord(
                 verticalMerge: VerticalMergeType.RESTART,
               }),
               createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[4]?.name || 'PK 308', 13),
+              createDataCell(op.internalClinics[4]?.name || 'PK 210', 13),
               createDataCell(String(op.internalClinics[4]?.total ?? 0), 14),
               createDataCell(String(op.internalClinics[4]?.admitted ?? 0), 14),
               createDataCell(
@@ -571,13 +571,30 @@ export async function downloadGiaoBanWord(
               createDataCell('', 18, { verticalMerge: VerticalMergeType.CONTINUE }),
               createDataCell('', 12, { verticalMerge: VerticalMergeType.CONTINUE }),
               createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[5]?.name || 'PK 309', 13),
+              createDataCell(op.internalClinics[5]?.name || 'PK 308', 13),
               createDataCell(String(op.internalClinics[5]?.total ?? 0), 14),
               createDataCell(String(op.internalClinics[5]?.admitted ?? 0), 14),
               createDataCell(
                 calculateRate(
                   op.internalClinics[5]?.admitted ?? 0,
                   op.internalClinics[5]?.total ?? 0,
+                ),
+                14,
+              ),
+            ],
+          }),
+          new TableRow({
+            children: [
+              createDataCell('', 18, { verticalMerge: VerticalMergeType.CONTINUE }),
+              createDataCell('', 12, { verticalMerge: VerticalMergeType.CONTINUE }),
+              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
+              createDataCell(op.internalClinics[6]?.name || 'PK 309', 13),
+              createDataCell(String(op.internalClinics[6]?.total ?? 0), 14),
+              createDataCell(String(op.internalClinics[6]?.admitted ?? 0), 14),
+              createDataCell(
+                calculateRate(
+                  op.internalClinics[6]?.admitted ?? 0,
+                  op.internalClinics[6]?.total ?? 0,
                 ),
                 14,
               ),

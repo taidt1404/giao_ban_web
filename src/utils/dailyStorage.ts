@@ -2,6 +2,7 @@ import { defaultReport, type ReportData } from '../data/defaultReport';
 import {
   defaultOutpatientReport,
   type OutpatientReportData,
+  type ClinicItem,
 } from '../data/outpatientReport';
 import {
   defaultAfterHoursReport,
@@ -211,6 +212,59 @@ export function ensureDefaultFreeTextSlides(bundle: DailyGiaoBanBundle): void {
   }
 }
 
+export function ensureOutpatientClinics(outpatient: OutpatientReportData): void {
+  if (!outpatient || !Array.isArray(outpatient.internalClinics)) return;
+
+  // Danh sách chuẩn thứ tự các phòng khám Nội theo yêu cầu
+  const standardOrder = [
+    { id: 'pk201', name: 'PK 201' },
+    { id: 'pk202', name: 'PK 202' },
+    { id: 'pk204', name: 'PK 204' },
+    { id: 'pk205', name: 'PK 205' },
+    { id: 'pk210', name: 'PK 210' },
+    { id: 'pk308', name: 'PK 308' },
+    { id: 'pk309', name: 'PK 309' },
+  ];
+
+  const existingMap = new Map<string, ClinicItem>();
+  for (const c of outpatient.internalClinics) {
+    const key = (c.id || c.name).toLowerCase().replace(/\s+/g, '');
+    existingMap.set(key, c);
+  }
+
+  const reordered: ClinicItem[] = standardOrder.map((std) => {
+    const key = std.id.toLowerCase().replace(/\s+/g, '');
+    const found = existingMap.get(key) || existingMap.get(std.name.toLowerCase().replace(/\s+/g, ''));
+    if (found) {
+      return {
+        ...found,
+        name: std.name, // Chuẩn hóa tên hiển thị đúng
+      };
+    }
+    return {
+      id: std.id,
+      name: std.name,
+      total: 0,
+      admitted: 0,
+    };
+  });
+
+  // Giữ lại các phòng khám phụ khác nếu có
+  for (const c of outpatient.internalClinics) {
+    const key = (c.id || c.name).toLowerCase().replace(/\s+/g, '');
+    const isStandard = standardOrder.some(
+      (s) =>
+        s.id.toLowerCase().replace(/\s+/g, '') === key ||
+        s.name.toLowerCase().replace(/\s+/g, '') === key,
+    );
+    if (!isStandard) {
+      reordered.push(c);
+    }
+  }
+
+  outpatient.internalClinics = reordered;
+}
+
 /**
  * Tải bundle của một ngày trực
  */
@@ -225,6 +279,7 @@ export function loadDailyBundle(dateStr: string): {
     if (raw) {
       const parsed = JSON.parse(raw) as DailyGiaoBanBundle;
       ensureDefaultFreeTextSlides(parsed);
+      ensureOutpatientClinics(parsed.outpatient);
       return { bundle: parsed, isExisting: true };
     }
 
@@ -233,6 +288,7 @@ export function loadDailyBundle(dateStr: string): {
     if (dateStr === today || getSavedDateList().length === 0) {
       const migrated = tryMigrateLegacyData(dateStr);
       if (migrated) {
+        ensureOutpatientClinics(migrated.outpatient);
         return { bundle: migrated, isExisting: true };
       }
     }
@@ -333,6 +389,7 @@ export async function apiGetServerBundle(
     const json = await res.json();
     if (json?.bundle) {
       ensureDefaultFreeTextSlides(json.bundle);
+      ensureOutpatientClinics(json.bundle.outpatient);
     }
     return json;
   } catch {
