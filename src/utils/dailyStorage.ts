@@ -101,7 +101,7 @@ export function setActiveDate(dateStr: string): void {
   }
 }
 
-function getBundleStorageKey(dateStr: string): string {
+export function getBundleStorageKey(dateStr: string): string {
   return `giao-ban-bundle-${dateStr}`;
 }
 
@@ -242,6 +242,10 @@ export function saveDailyBundle(bundle: DailyGiaoBanBundle): void {
       dates.sort().reverse();
       localStorage.setItem(DATES_INDEX_KEY, JSON.stringify(dates));
     }
+    // Tự động đồng bộ ngầm lên Server lưu trữ chung
+    apiSaveServerBundle(updatedBundle).catch((err) => {
+      console.warn('Không thể kết nối máy chủ LAN để lưu, đã lưu tạm vào bộ nhớ máy:', err);
+    });
   } catch (err) {
     console.error(`Lỗi khi lưu bundle ngày ${bundle.date}:`, err);
   }
@@ -255,8 +259,108 @@ export function deleteDailyBundle(dateStr: string): void {
     localStorage.removeItem(getBundleStorageKey(dateStr));
     const dates = getSavedDateList().filter((d) => d !== dateStr);
     localStorage.setItem(DATES_INDEX_KEY, JSON.stringify(dates));
+
+    // Tự động xóa trên Server lưu trữ chung
+    apiDeleteServerBundle(dateStr).catch((err) => {
+      console.warn('Không thể kết nối máy chủ LAN để xóa:', err);
+    });
   } catch (err) {
     console.error(`Lỗi khi xóa bundle ngày ${dateStr}:`, err);
+  }
+}
+
+// ============================================================
+// KẾT NỐI VÀ ĐỒNG BỘ MÁY CHỦ LƯU TRỮ CHUNG (SERVER LAN API)
+// ============================================================
+
+export async function apiCheckServer(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return false;
+    const json = await res.json();
+    return json?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function apiGetServerDates(): Promise<string[]> {
+  try {
+    const res = await fetch('/api/dates');
+    if (!res.ok) return [];
+    const json = await res.json();
+    return Array.isArray(json?.dates) ? json.dates : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function apiGetServerBundle(
+  dateStr: string,
+): Promise<{ bundle: DailyGiaoBanBundle | null; isExisting: boolean }> {
+  try {
+    const res = await fetch(`/api/bundle/${dateStr}`);
+    if (!res.ok) return { bundle: null, isExisting: false };
+    return await res.json();
+  } catch {
+    return { bundle: null, isExisting: false };
+  }
+}
+
+export async function apiSaveServerBundle(bundle: DailyGiaoBanBundle): Promise<boolean> {
+  try {
+    const res = await fetch('/api/bundle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bundle }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function apiDeleteServerBundle(dateStr: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/bundle/${dateStr}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Đồng bộ toàn bộ dữ liệu đang có trong LocalStorage của máy client lên Server
+ * (Đảm bảo dữ liệu máy chủ cũ của bạn không bị mất khi chuyển sang lưu trên server)
+ */
+export async function apiSyncLocalToServer(): Promise<{ success: boolean; syncedCount: number } | null> {
+  try {
+    const localDates = getSavedDateList();
+    if (localDates.length === 0) return null;
+
+    const allData: Record<string, DailyGiaoBanBundle> = {};
+    for (const d of localDates) {
+      const raw = localStorage.getItem(getBundleStorageKey(d));
+      if (raw) {
+        try {
+          allData[d] = JSON.parse(raw);
+        } catch {}
+      }
+    }
+
+    if (Object.keys(allData).length === 0) return null;
+
+    const res = await fetch('/api/sync-legacy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ allData, dates: localDates }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }
 

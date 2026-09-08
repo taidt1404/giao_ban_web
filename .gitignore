@@ -25,3 +25,6 @@ dist-ssr
 
 # Brain / agent temp artifacts
 .gemini
+
+# Hospital local server data (private)
+server-data

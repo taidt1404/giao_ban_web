@@ -76,6 +76,10 @@ import {
   importBackupFromFile,
   importAllDataFromJson,
   formatDisplayDate,
+  apiCheckServer,
+  apiGetServerDates,
+  apiGetServerBundle,
+  apiSyncLocalToServer,
 } from './utils/dailyStorage';
 import DateSelectorBar from './components/DateSelectorBar';
 import UninitializedDateModal from './components/UninitializedDateModal';
@@ -261,37 +265,109 @@ export default function App() {
     };
   }, [isFullscreen, totalSlideCount]);
 
+  const [isServerMode, setIsServerMode] = useState<boolean>(false);
+
+  // Đồng bộ với máy chủ lưu trữ tập trung khi khởi động
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initServer() {
+      const isAvailable = await apiCheckServer();
+      if (!isAvailable || !isMounted) return;
+      setIsServerMode(true);
+
+      // Bước 1: Nếu client này có dữ liệu trong LocalStorage (máy của bạn đã nhập 5 ngày bao gồm 1/9/2026),
+      // tự động đồng bộ đẩy toàn bộ lên Server để lưu vào server-data!
+      await apiSyncLocalToServer();
+
+      // Bước 2: Lấy danh sách ngày chuẩn nhất từ Server
+      const serverDates = await apiGetServerDates();
+      if (serverDates && serverDates.length > 0 && isMounted) {
+        setSavedDates(serverDates);
+        localStorage.setItem('giao-ban-saved-dates-index-v1', JSON.stringify(serverDates));
+
+        // Bước 3: Tải dữ liệu của ngày đang mở từ Server
+        const serverBundleRes = await apiGetServerBundle(currentDate);
+        if (serverBundleRes && serverBundleRes.isExisting && serverBundleRes.bundle && isMounted) {
+          applyBundleToStates(serverBundleRes.bundle);
+          saveDailyBundle(serverBundleRes.bundle);
+          setSavedAt(`Máy chủ LAN - Bản lưu ngày ${formatDisplayDate(currentDate)}`);
+        }
+      }
+    }
+
+    initServer();
+
+    // Định kỳ 20s cập nhật danh sách ngày từ máy chủ nếu các khoa phòng khác có thêm ngày mới
+    const interval = setInterval(async () => {
+      if (!document.hidden) {
+        const dates = await apiGetServerDates();
+        if (dates && dates.length > 0 && isMounted) {
+          setSavedDates(dates);
+        }
+      }
+    }, 20000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [currentDate, applyBundleToStates]);
+
   function handleSave() {
     const bundle = getCurrentBundle();
     saveDailyBundle(bundle);
     setSavedDates(getSavedDateList());
     const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
     setSavedAt(
-      `Đã lưu ${now.toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })} (Ngày ${formatDisplayDate(currentDate)})`,
+      `Đã lưu ${isServerMode ? 'máy chủ' : ''} ${timeStr} (${formatDisplayDate(currentDate)})`,
     );
   }
 
   // Xử lý chọn ngày từ DateSelectorBar
   const handleSelectDate = useCallback(
-    (newDateStr: string) => {
+    async (newDateStr: string) => {
       // Tự động lưu ngày hiện tại trước khi chuyển
       const currentBundle = getCurrentBundle();
       saveDailyBundle(currentBundle);
 
-      const loaded = loadDailyBundle(newDateStr);
-      if (loaded.isExisting) {
-        applyBundleToStates(loaded.bundle);
+      // 1. Ưu tiên tải dữ liệu từ Máy chủ LAN trước
+      let loadedBundle: DailyGiaoBanBundle | null = null;
+      let isExisting = false;
+
+      try {
+        const serverRes = await apiGetServerBundle(newDateStr);
+        if (serverRes && serverRes.isExisting && serverRes.bundle) {
+          loadedBundle = serverRes.bundle;
+          isExisting = true;
+        }
+      } catch {
+        // fallback to local
+      }
+
+      // 2. Nếu server chưa có, fallback tìm trong LocalStorage
+      if (!isExisting) {
+        const localLoaded = loadDailyBundle(newDateStr);
+        loadedBundle = localLoaded.bundle;
+        isExisting = localLoaded.isExisting;
+      }
+
+      if (isExisting && loadedBundle) {
+        applyBundleToStates(loadedBundle);
+        saveDailyBundle(loadedBundle);
         setCurrentDate(newDateStr);
         setActiveDate(newDateStr);
         setSavedDates(getSavedDateList());
         setSavedAt(`Bản lưu ngày ${formatDisplayDate(newDateStr)}`);
       } else {
         // Ngày chưa từng tạo -> mở modal hỏi người dùng
-        const closest = findClosestPreviousDate(newDateStr, getSavedDateList());
+        const dates = getSavedDateList();
+        const closest = findClosestPreviousDate(newDateStr, dates);
         setUninitModal({
           isOpen: true,
           targetDate: newDateStr,
