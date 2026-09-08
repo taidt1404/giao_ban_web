@@ -1322,6 +1322,129 @@ button { cursor: pointer; }
 }
 
 /* =========================================
+   INPATIENT SMART SYNC (CŨ = HIỆN CÓ HÔM QUA)
+   ========================================= */
+.inpatient-sync-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+
+.inpatient-sync-banner.is-synced {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.inpatient-sync-banner.is-desynced {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.sync-banner-info {
+  flex: 1;
+}
+
+.sync-banner-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.sync-banner-desc {
+  font-size: 11.5px;
+  opacity: 0.85;
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.sync-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.sync-action-btn.primary-sync-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.sync-action-btn.primary-sync-btn:hover {
+  background: #1d4ed8;
+}
+
+.sync-action-btn.secondary-sync-btn {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.sync-action-btn.secondary-sync-btn:hover {
+  background: #cbd5e1;
+}
+
+/* Slide 4 Preview Sync Bar */
+.slide-inpatient-sync-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.slide-inpatient-sync-bar.synced {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.slide-inpatient-sync-bar.desynced {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.slide-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid currentColor;
+  color: inherit;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.slide-sync-btn:hover {
+  background: currentColor;
+  color: #ffffff;
+}
+
+/* =========================================
    DATE SELECTOR BAR & HISTORICAL SNAPSHOTS
    ========================================= */
 .date-selector-bar {

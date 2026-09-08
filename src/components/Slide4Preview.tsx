@@ -1,15 +1,26 @@
 import { useMemo } from 'react';
+import { RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   type InpatientReportData,
   calculateCurrentPatients,
   calculateBedDifference,
 } from '../data/inpatientReport';
+import {
+  getPreviousDayInpatientData,
+  syncInpatientOldFromPrevious,
+  checkInpatientSyncStatus,
+  formatDisplayDate,
+} from '../utils/dailyStorage';
 
 type Props = {
   data: InpatientReportData;
+  currentDate?: string;
+  onChange?: (next: InpatientReportData) => void;
 };
 
-export default function Slide4Preview({ data }: Props) {
+export default function Slide4Preview({ data, currentDate, onChange }: Props) {
+  const isEditable = Boolean(onChange);
+
   // Tính dòng TỔNG cộng dồn
   const summary = useMemo(() => {
     let oldPatients = 0;
@@ -44,6 +55,23 @@ export default function Slide4Preview({ data }: Props) {
       diff,
     };
   }, [data.departments]);
+
+  // Kiểm tra ngày trước
+  const previousData = useMemo(() => {
+    if (!currentDate) return null;
+    return getPreviousDayInpatientData(currentDate);
+  }, [currentDate]);
+
+  const syncStatus = useMemo(() => {
+    if (!previousData) return null;
+    return checkInpatientSyncStatus(data, previousData.inpatient);
+  }, [data, previousData]);
+
+  function handleSync() {
+    if (!onChange || !previousData) return;
+    const synced = syncInpatientOldFromPrevious(data, previousData.inpatient);
+    onChange(synced);
+  }
 
   return (
     <div className="slide-wrap">
@@ -103,6 +131,36 @@ export default function Slide4Preview({ data }: Props) {
             </tbody>
           </table>
         </div>
+
+        {/* Thanh đồng bộ thông minh hiển thị dưới bảng ở chế độ chỉnh sửa */}
+        {isEditable && previousData && syncStatus && (
+          <div
+            className={`slide-inpatient-sync-bar ${syncStatus.isSynced ? 'synced' : 'desynced'}`}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {syncStatus.isSynced ? (
+                <CheckCircle2 size={15} />
+              ) : (
+                <AlertTriangle size={15} />
+              )}
+              <span>
+                {syncStatus.isSynced
+                  ? `Cột CŨ đã khớp chuẩn với cột HIỆN CÓ ngày ${formatDisplayDate(previousData.date)} (${syncStatus.expectedTotal} BN).`
+                  : `Cột CŨ (${syncStatus.currentTotal} BN) đang lệch ${syncStatus.diffCount} BN so với HIỆN CÓ ngày ${formatDisplayDate(previousData.date)} (${syncStatus.expectedTotal} BN).`}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="slide-sync-btn"
+              onClick={handleSync}
+              title={`Lấy số Hiện có ngày ${formatDisplayDate(previousData.date)} điền vào cột Cũ`}
+            >
+              <RefreshCw size={12} />
+              <span>{syncStatus.isSynced ? 'Lấy lại từ ngày trước' : `Đồng bộ từ ${formatDisplayDate(previousData.date)}`}</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

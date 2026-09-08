@@ -1001,7 +1001,13 @@ export default function App() {
             {activeSlide === 1 && <SlidePreview report={report} />}
             {activeSlide === 2 && <Slide2Preview data={outpatient} />}
             {activeSlide === 3 && <Slide3Preview data={afterHours} />}
-            {activeSlide === 4 && <Slide4Preview data={inpatient} />}
+            {activeSlide === 4 && (
+              <Slide4Preview
+                data={inpatient}
+                currentDate={currentDate}
+                onChange={isFullscreen ? undefined : setInpatient}
+              />
+            )}
             {isFreeTextSlide && currentFreeSlide && (
               <FreeTextSlidePreview data={currentFreeSlide} />
             )}
@@ -1035,7 +1041,13 @@ export default function App() {
           {activeSlide === 1 && <EditorPanel report={report} onChange={setReport} />}
           {activeSlide === 2 && <EditorPanel2 data={outpatient} onChange={setOutpatient} />}
           {activeSlide === 3 && <EditorPanel3 data={afterHours} onChange={setAfterHours} />}
-          {activeSlide === 4 && <EditorPanel4 data={inpatient} onChange={setInpatient} />}
+          {activeSlide === 4 && (
+            <EditorPanel4
+              data={inpatient}
+              currentDate={currentDate}
+              onChange={setInpatient}
+            />
+          )}
           {isFreeTextSlide && currentFreeSlide && (
             <EditorPanelFreeText
               data={currentFreeSlide}

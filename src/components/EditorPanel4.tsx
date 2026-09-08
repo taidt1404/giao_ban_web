@@ -1,16 +1,25 @@
+import { useMemo } from 'react';
+import { RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import {
   type InpatientReportData,
   type InpatientDepartment,
   calculateCurrentPatients,
   calculateBedDifference,
 } from '../data/inpatientReport';
+import {
+  getPreviousDayInpatientData,
+  syncInpatientOldFromPrevious,
+  checkInpatientSyncStatus,
+  formatDisplayDate,
+} from '../utils/dailyStorage';
 
 type Props = {
   data: InpatientReportData;
+  currentDate?: string;
   onChange: (next: InpatientReportData) => void;
 };
 
-export default function EditorPanel4({ data, onChange }: Props) {
+export default function EditorPanel4({ data, currentDate, onChange }: Props) {
   function handleDeptChange(
     index: number,
     field: keyof Omit<InpatientDepartment, 'id' | 'name'>,
@@ -28,6 +37,24 @@ export default function EditorPanel4({ data, onChange }: Props) {
     });
   }
 
+  // Lấy dữ liệu ngày liền kề trước đó (nếu có)
+  const previousData = useMemo(() => {
+    if (!currentDate) return null;
+    return getPreviousDayInpatientData(currentDate);
+  }, [currentDate]);
+
+  // Kiểm tra tình trạng khớp dữ liệu Cũ vs Hiện có
+  const syncStatus = useMemo(() => {
+    if (!previousData) return null;
+    return checkInpatientSyncStatus(data, previousData.inpatient);
+  }, [data, previousData]);
+
+  function handleSyncFromPrevious() {
+    if (!previousData) return;
+    const synced = syncInpatientOldFromPrevious(data, previousData.inpatient);
+    onChange(synced);
+  }
+
   return (
     <section className="editor-panel">
       <div className="panel-header">
@@ -37,6 +64,51 @@ export default function EditorPanel4({ data, onChange }: Props) {
         </div>
         <span className="badge">Tự động tính toán</span>
       </div>
+
+      {/* BANNER THÔNG MINH: ĐỒNG BỘ CỘT CŨ VỚI HIỆN CÓ NGÀY HÔM TRƯỚC */}
+      {previousData && syncStatus && (
+        <div
+          className={`inpatient-sync-banner ${syncStatus.isSynced ? 'is-synced' : 'is-desynced'}`}
+        >
+          <div className="sync-banner-info">
+            <div className="sync-banner-title">
+              {syncStatus.isSynced ? (
+                <>
+                  <CheckCircle2 size={16} />
+                  <span>
+                    Số <strong>CŨ</strong> đã khớp chuẩn với <strong>HIỆN CÓ</strong> ngày{' '}
+                    {formatDisplayDate(previousData.date)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle size={16} />
+                  <span>
+                    Số <strong>CŨ</strong> hiện tại (Tổng: {syncStatus.currentTotal}) khác với{' '}
+                    <strong>HIỆN CÓ</strong> ngày {formatDisplayDate(previousData.date)} (Tổng:{' '}
+                    {syncStatus.expectedTotal})
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="sync-banner-desc">
+              {syncStatus.isSynced
+                ? `Tất cả các khoa đều khớp chính xác (${syncStatus.expectedTotal} BN).`
+                : `Đang lệch ${syncStatus.diffCount} bệnh nhân. Bạn có thể bấm nút bên dưới để cập nhật lại.`}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={`sync-action-btn ${syncStatus.isSynced ? 'secondary-sync-btn' : 'primary-sync-btn'}`}
+            title={`Đồng bộ số Cũ của tất cả các khoa theo số Hiện có ngày ${formatDisplayDate(previousData.date)}`}
+            onClick={handleSyncFromPrevious}
+          >
+            <RefreshCw size={13} />
+            <span>{syncStatus.isSynced ? 'Lấy lại từ ngày trước' : 'Đồng bộ từ ngày trước'}</span>
+          </button>
+        </div>
+      )}
 
       <div className="inpatient-dept-list">
         {data.departments.map((dept, index) => {

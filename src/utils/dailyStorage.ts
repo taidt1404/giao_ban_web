@@ -11,6 +11,8 @@ import {
 import {
   defaultInpatientReport,
   type InpatientReportData,
+  type InpatientDepartment,
+  calculateCurrentPatients,
 } from '../data/inpatientReport';
 import {
   defaultFreeTextSlides,
@@ -164,9 +166,25 @@ function tryMigrateLegacyData(targetDate: string): DailyGiaoBanBundle | null {
 }
 
 /**
- * Tạo một bundle mặc định trắng cho một ngày cụ thể
+ * Tạo một bundle mặc định trắng cho một ngày cụ thể (tự động kế thừa Cũ = Hiện có của ngày trước nếu có)
  */
 export function createDefaultBundle(dateStr: string): DailyGiaoBanBundle {
+  let initInpatient = defaultInpatientReport;
+  const closestPrevDate = findClosestPreviousDate(dateStr, undefined, true);
+  if (closestPrevDate) {
+    try {
+      const prevLoaded = loadDailyBundle(closestPrevDate);
+      if (prevLoaded.bundle?.inpatient) {
+        initInpatient = syncInpatientOldFromPrevious(
+          defaultInpatientReport,
+          prevLoaded.bundle.inpatient,
+        );
+      }
+    } catch {
+      // fallback to default
+    }
+  }
+
   return {
     date: dateStr,
     report: {
@@ -175,7 +193,7 @@ export function createDefaultBundle(dateStr: string): DailyGiaoBanBundle {
     },
     outpatient: defaultOutpatientReport,
     afterHours: defaultAfterHoursReport,
-    inpatient: defaultInpatientReport,
+    inpatient: initInpatient,
     freeTextSlides: defaultFreeTextSlides,
     soapSlides: defaultSoapSlides,
     monitoring: defaultMonitoringReport,
@@ -529,14 +547,111 @@ export function cloneBundleToDate(
 export function findClosestPreviousDate(
   targetDate: string,
   dateList?: string[],
+  strictPastOnly = false,
 ): string | undefined {
-  const savedDates = dateList || getSavedDateList();
+  const savedDates = (dateList || getSavedDateList()).slice().sort().reverse();
   const pastDates = savedDates.filter((d) => d < targetDate);
   if (pastDates.length > 0) {
     return pastDates[0]; // Vì list đã được sắp xếp giảm dần nên phần tử đầu tiên là ngày gần nhất
   }
+  if (strictPastOnly) return undefined;
   // Nếu không có ngày trước đó, lấy ngày bất kỳ gần nhất
   return savedDates[0];
+}
+
+/**
+ * Lấy dữ liệu nội trú của ngày gần nhất trước ngày chỉ định
+ */
+export function getPreviousDayInpatientData(targetDate: string): {
+  date: string;
+  inpatient: InpatientReportData;
+} | null {
+  const closest = findClosestPreviousDate(targetDate, undefined, true);
+  if (!closest) return null;
+  const loaded = loadDailyBundle(closest);
+  if (!loaded.bundle?.inpatient) return null;
+  return {
+    date: closest,
+    inpatient: loaded.bundle.inpatient,
+  };
+}
+
+/**
+ * Đồng bộ cột "Cũ" của hôm nay từ cột "Hiện có" của ngày hôm trước
+ */
+export function syncInpatientOldFromPrevious(
+  currentInpatient: InpatientReportData,
+  previousInpatient: InpatientReportData,
+): InpatientReportData {
+  const prevMap = new Map<string, InpatientDepartment>();
+  previousInpatient.departments.forEach((dept) => {
+    const key = (dept.id || dept.name).trim().toLowerCase();
+    prevMap.set(key, dept);
+  });
+
+  const updatedDepts = currentInpatient.departments.map((dept) => {
+    const key = (dept.id || dept.name).trim().toLowerCase();
+    const prev = prevMap.get(key);
+    if (prev) {
+      const cur = calculateCurrentPatients(prev);
+      return {
+        ...dept,
+        oldPatients: Math.max(0, cur),
+        // Kế thừa định mức giường thực kê nếu hôm nay chưa có
+        actualBeds: dept.actualBeds || prev.actualBeds,
+      };
+    }
+    return dept;
+  });
+
+  return {
+    ...currentInpatient,
+    departments: updatedDepts,
+  };
+}
+
+/**
+ * Kiểm tra trạng thái đồng bộ giữa số "Cũ" hôm nay và số "Hiện có" ngày trước
+ */
+export function checkInpatientSyncStatus(
+  currentInpatient: InpatientReportData,
+  previousInpatient: InpatientReportData,
+): {
+  isSynced: boolean;
+  diffCount: number;
+  expectedTotal: number;
+  currentTotal: number;
+} {
+  const prevMap = new Map<string, InpatientDepartment>();
+  let expectedTotal = 0;
+  let currentTotal = 0;
+  let diffCount = 0;
+
+  previousInpatient.departments.forEach((dept) => {
+    const key = (dept.id || dept.name).trim().toLowerCase();
+    prevMap.set(key, dept);
+    expectedTotal += calculateCurrentPatients(dept);
+  });
+
+  currentInpatient.departments.forEach((dept) => {
+    currentTotal += Number(dept.oldPatients) || 0;
+    const key = (dept.id || dept.name).trim().toLowerCase();
+    const prev = prevMap.get(key);
+    if (prev) {
+      const expected = Math.max(0, calculateCurrentPatients(prev));
+      const curOld = Number(dept.oldPatients) || 0;
+      if (curOld !== expected) {
+        diffCount += Math.abs(curOld - expected);
+      }
+    }
+  });
+
+  return {
+    isSynced: diffCount === 0,
+    diffCount,
+    expectedTotal,
+    currentTotal,
+  };
 }
 
 /**
