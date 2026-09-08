@@ -183,6 +183,34 @@ export function createDefaultBundle(dateStr: string): DailyGiaoBanBundle {
   };
 }
 
+export function ensureDefaultFreeTextSlides(bundle: DailyGiaoBanBundle): void {
+  if (!bundle) return;
+  if (!Array.isArray(bundle.freeTextSlides) || bundle.freeTextSlides.length === 0) {
+    bundle.freeTextSlides = [...defaultFreeTextSlides];
+    return;
+  }
+
+  const titlesLower = bundle.freeTextSlides.map((s) => (s.title || '').toLowerCase());
+
+  // Kiểm tra slide 2: Chuyển viện ngoài giờ
+  const hasNgoaiGio = titlesLower.some((t) => t.includes('ngoài giờ'));
+  if (!hasNgoaiGio && defaultFreeTextSlides[1]) {
+    bundle.freeTextSlides.push({
+      ...defaultFreeTextSlides[1],
+      id: `slide-freetext-ngoaigio-${Date.now()}`,
+    });
+  }
+
+  // Kiểm tra slide 3: Chuyển viện nội trú
+  const hasNoiTru = titlesLower.some((t) => t.includes('nội trú') && t.includes('chuyển viện'));
+  if (!hasNoiTru && defaultFreeTextSlides[2]) {
+    bundle.freeTextSlides.push({
+      ...defaultFreeTextSlides[2],
+      id: `slide-freetext-noitru-${Date.now()}`,
+    });
+  }
+}
+
 /**
  * Tải bundle của một ngày trực
  */
@@ -196,6 +224,7 @@ export function loadDailyBundle(dateStr: string): {
 
     if (raw) {
       const parsed = JSON.parse(raw) as DailyGiaoBanBundle;
+      ensureDefaultFreeTextSlides(parsed);
       return { bundle: parsed, isExisting: true };
     }
 
@@ -301,7 +330,11 @@ export async function apiGetServerBundle(
   try {
     const res = await fetch(`/api/bundle/${dateStr}`);
     if (!res.ok) return { bundle: null, isExisting: false };
-    return await res.json();
+    const json = await res.json();
+    if (json?.bundle) {
+      ensureDefaultFreeTextSlides(json.bundle);
+    }
+    return json;
   } catch {
     return { bundle: null, isExisting: false };
   }
