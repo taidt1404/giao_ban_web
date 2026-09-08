@@ -122,11 +122,11 @@ button { cursor: pointer; }
 }
 .slide-head { display: flex; align-items: center; justify-content: center; gap: 24px; }
 .slide-logo { width: 86px; height: 86px; object-fit: contain; }
-.hospital-heading { color: #143b76; font-size: clamp(17px, 2.0vw, 27px); line-height: 1.28; font-weight: 700; text-align: center; }
-.report-title { margin-top: 26px; text-align: center; font-size: clamp(21px, 2.2vw, 31px); line-height: 1.15; font-weight: 700; color: #f00000; }
-.report-date { margin-top: 7px; text-align: center; font-size: clamp(18px, 2vw, 28px); line-height: 1.15; font-weight: 700; color: #143b76; }
-.staff-list { margin-top: 22px; font-size: clamp(15px, 1.7vw, 23px); line-height: 1.34; }
-.staff-list p { margin: 0 0 5px; }
+.hospital-heading { color: #143b76; font-size: clamp(18px, 2.1vw, 29px); line-height: 1.28; font-weight: 700; text-align: center; }
+.report-title { margin-top: 26px; text-align: center; font-size: clamp(23px, 2.4vw, 34px); line-height: 1.15; font-weight: 700; color: #f00000; }
+.report-date { margin-top: 7px; text-align: center; font-size: clamp(19px, 2.1vw, 29px); line-height: 1.15; font-weight: 700; color: #143b76; }
+.staff-list { margin-top: 22px; font-size: clamp(16.5px, 1.8vw, 25px); line-height: 1.38; }
+.staff-list p { margin: 0 0 6px; }
 .staff-list strong { font-size: 1.0em; }
 
 .presentation-btn {
@@ -320,7 +320,7 @@ button { cursor: pointer; }
 }
 .slide2-title {
   color: #ea1b1b;
-  font-size: clamp(16px, 1.8vw, 24px);
+  font-size: clamp(18px, 2vw, 28px);
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
@@ -339,7 +339,7 @@ button { cursor: pointer; }
 }
 .slide3-title {
   color: #ea1b1b;
-  font-size: clamp(20px, 2.3vw, 32px);
+  font-size: clamp(22px, 2.4vw, 34px);
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.8px;
@@ -358,7 +358,7 @@ button { cursor: pointer; }
 }
 .slide4-title {
   color: #ea1b1b;
-  font-size: clamp(18px, 2vw, 28px);
+  font-size: clamp(20px, 2.2vw, 30px);
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
@@ -379,7 +379,7 @@ button { cursor: pointer; }
 }
 .freetext-slide-title {
   color: #ea1b1b;
-  font-size: clamp(20px, 2.3vw, 32px);
+  font-size: clamp(22px, 2.4vw, 34px);
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.5px;
@@ -416,7 +416,7 @@ button { cursor: pointer; }
 }
 .monitoring-slide-title {
   color: #ea1b1b;
-  font-size: clamp(20px, 2.3vw, 32px);
+  font-size: clamp(22px, 2.4vw, 34px);
   font-weight: 800;
   margin: 0;
   letter-spacing: 0.8px;
@@ -431,20 +431,20 @@ button { cursor: pointer; }
   width: 100%;
   border-collapse: collapse;
   font-family: "Times New Roman", Times, serif;
-  font-size: clamp(13px, 1.45vw, 19px);
+  font-size: clamp(14.5px, 1.55vw, 21px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .monitoring-table th {
   background: #3565a8;
   color: white;
-  padding: 12px 16px;
+  padding: 13px 18px;
   font-weight: 700;
   text-align: center;
   border: 1.5px solid #ffffff;
   letter-spacing: 0.5px;
 }
 .monitoring-table td {
-  padding: 12px 16px;
+  padding: 13px 18px;
   text-align: center;
   border: 1.5px solid #ffffff;
 }
@@ -533,8 +533,8 @@ button { cursor: pointer; }
   flex-direction: column;
   gap: 20px;
   font-family: "Times New Roman", Times, serif;
-  font-size: clamp(14px, 1.45vw, 19px);
-  line-height: 1.5;
+  font-size: clamp(15.5px, 1.55vw, 21px);
+  line-height: 1.55;
   color: #111;
 }
 .freetext-record-item {
@@ -677,20 +677,20 @@ button { cursor: pointer; }
   border-collapse: collapse;
   border: 1.5px solid #111;
   font-family: "Times New Roman", Times, serif;
-  font-size: clamp(12px, 1.22vw, 16px);
+  font-size: clamp(13.5px, 1.35vw, 18px);
   background: white;
 }
 .inpatient-table th {
   border: 1px solid #222;
-  padding: 6px 3px;
+  padding: 7px 4px;
   font-weight: 700;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .inpatient-table td {
   border: 1px solid #222;
-  padding: 5px 3px;
-  line-height: 1.25;
+  padding: 7px 4px;
+  line-height: 1.3;
 }
 .inpatient-table .row-total {
   font-weight: 700;
@@ -788,13 +788,13 @@ button { cursor: pointer; }
   border-collapse: collapse;
   border: 1.5px solid #111;
   font-family: "Times New Roman", Times, serif;
-  font-size: clamp(13px, 1.35vw, 18px);
+  font-size: clamp(14px, 1.45vw, 19.5px);
   background: white;
 }
 .afterhours-table td {
   border: 1px solid #222;
-  padding: 6px 12px;
-  line-height: 1.35;
+  padding: 8px 14px;
+  line-height: 1.38;
 }
 .afterhours-table .cell-bold-label {
   font-weight: 700;
@@ -827,22 +827,22 @@ button { cursor: pointer; }
   border-collapse: collapse;
   border: 1.5px solid #1a3258;
   font-family: "Times New Roman", Times, serif;
-  font-size: clamp(11px, 1.15vw, 15px);
+  font-size: clamp(12.5px, 1.25vw, 16.5px);
   background: white;
 }
 .outpatient-table th {
   background: #3b6bb5;
   color: white;
   font-weight: 700;
-  padding: 6px 4px;
+  padding: 7px 4px;
   text-align: center;
   border: 1px solid #1a3258;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .outpatient-table td {
   border: 1px solid #1a3258;
-  padding: 3px 5px;
-  line-height: 1.25;
+  padding: 4px 6px;
+  line-height: 1.3;
 }
 .outpatient-table .font-bold {
   font-weight: 700;
@@ -979,21 +979,99 @@ button { cursor: pointer; }
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
 }
 
+/* ============================================================
+   CHẾ ĐỘ TRÌNH CHIẾU F5: TỰ ĐỘNG TĂNG CỠ CHỮ TẤT CẢ CÁC SLIDE
+   CHO MÀN HÌNH LỚN / MÁY CHIẾU HỘI TRƯỜNG
+   ============================================================ */
+/* Slide 1: Thông tin kíp trực */
+.app-shell.presentation-mode .hospital-heading {
+  font-size: clamp(20px, 2.3vw, 32px);
+}
+.app-shell.presentation-mode .report-title {
+  font-size: clamp(26px, 2.7vw, 38px);
+}
+.app-shell.presentation-mode .report-date {
+  font-size: clamp(21px, 2.2vw, 31px);
+}
+.app-shell.presentation-mode .staff-list {
+  font-size: clamp(18px, 1.95vw, 27px);
+  line-height: 1.48;
+}
+
+/* Tiêu đề chung các Slide 2, 3, 4, 5, 8, 9 */
+.app-shell.presentation-mode .slide2-title,
+.app-shell.presentation-mode .slide3-title,
+.app-shell.presentation-mode .slide4-title,
+.app-shell.presentation-mode .freetext-slide-title,
+.app-shell.presentation-mode .monitoring-slide-title,
+.app-shell.presentation-mode .case-table-title {
+  font-size: clamp(23px, 2.5vw, 34px);
+  margin-bottom: 14px;
+}
+
+/* Slide 2: Ngoại trú */
+.app-shell.presentation-mode .outpatient-table {
+  font-size: clamp(13.5px, 1.35vw, 18px);
+}
+.app-shell.presentation-mode .outpatient-table td {
+  padding: 5px 8px;
+  line-height: 1.32;
+}
+
+/* Slide 3: Khám ngoài giờ */
+.app-shell.presentation-mode .afterhours-table {
+  font-size: clamp(16px, 1.6vw, 22px);
+}
+.app-shell.presentation-mode .afterhours-table td {
+  padding: 10px 18px;
+}
+
+/* Slide 4: Nội trú */
+.app-shell.presentation-mode .inpatient-table {
+  font-size: clamp(15px, 1.5vw, 20px);
+}
+.app-shell.presentation-mode .inpatient-table th,
+.app-shell.presentation-mode .inpatient-table td {
+  padding: 8px 6px;
+}
+
+/* Slide 5, 6, 7: Văn bản tự do */
+.app-shell.presentation-mode .freetext-content-area {
+  font-size: clamp(18px, 1.8vw, 24px);
+  line-height: 1.6;
+}
+
+/* Slide 8: Bệnh nhân theo dõi */
+.app-shell.presentation-mode .monitoring-table {
+  font-size: clamp(17px, 1.75vw, 23px);
+}
+.app-shell.presentation-mode .monitoring-table th,
+.app-shell.presentation-mode .monitoring-table td {
+  padding: 16px 20px;
+}
+
+/* Slide SOAP: Ca bệnh lâm sàng */
 .app-shell.presentation-mode .soap-patient-header {
-  font-size: clamp(22px, 2.3vw, 30px);
+  font-size: clamp(23px, 2.4vw, 32px);
   margin-bottom: 10px;
 }
-
 .app-shell.presentation-mode .soap-table {
-  font-size: clamp(14px, 1.38vw, 18.5px);
+  font-size: clamp(15px, 1.45vw, 19.5px);
 }
-
 .app-shell.presentation-mode .soap-table td {
-  padding: 10px 12px;
+  padding: 10px 14px;
+}
+.app-shell.presentation-mode .soap-text-block {
+  line-height: 1.48;
 }
 
-.app-shell.presentation-mode .soap-text-block {
-  line-height: 1.45;
+/* Slide 9: Ca bệnh dạng bảng 6 cột */
+.app-shell.presentation-mode .case-data-table {
+  font-size: clamp(15px, 1.45vw, 18.5px);
+}
+.app-shell.presentation-mode .case-data-table td {
+  padding: 10px 10px;
+  line-height: 1.42;
 }
 
 /* Nút nổi thoát trình chiếu */
@@ -1145,7 +1223,7 @@ button { cursor: pointer; }
 
 .case-table-title {
   color: #e50000;
-  font-size: 26px;
+  font-size: clamp(22px, 2.3vw, 30px);
   font-weight: 800;
   text-transform: uppercase;
   margin: 0;
@@ -1161,8 +1239,8 @@ button { cursor: pointer; }
   width: 100%;
   border-collapse: collapse;
   font-family: 'Times New Roman', Times, serif;
-  font-size: 15px;
-  line-height: 1.35;
+  font-size: clamp(13.5px, 1.35vw, 17px);
+  line-height: 1.38;
   color: #000000;
   border: 1.5px solid #000000;
 }
