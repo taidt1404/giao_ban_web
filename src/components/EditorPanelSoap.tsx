@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { Trash2, Plus, CopyPlus } from 'lucide-react';
 import type { SoapSlideData, SoapTimelineRow } from '../data/soapReport';
 
@@ -138,8 +139,8 @@ export default function EditorPanelSoap({
               <label style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '4px' }}>
                 Thời gian (Ngày, giờ)
               </label>
-              <textarea
-                rows={2}
+              <AutoExpandTextarea
+                minRows={2}
                 value={row.timeText}
                 placeholder="VD: 22/08/2026&#10;20:20"
                 style={{
@@ -150,7 +151,7 @@ export default function EditorPanelSoap({
                   fontSize: '12px',
                   boxSizing: 'border-box',
                 }}
-                onChange={(e) => handleRowFieldChange(rIndex, 'timeText', e.target.value)}
+                onChange={(val) => handleRowFieldChange(rIndex, 'timeText', val)}
               />
             </div>
 
@@ -158,8 +159,8 @@ export default function EditorPanelSoap({
               <label style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '4px' }}>
                 Diễn biến bệnh (Cấu trúc SOAP: Tiền sử, bệnh sử, khám, chỉ số...)
               </label>
-              <textarea
-                rows={8}
+              <AutoExpandTextarea
+                minRows={6}
                 value={row.progression}
                 placeholder="Nhập diễn biến bệnh, triệu chứng, mạch, HA, SpO2, chẩn đoán, hướng điều trị..."
                 style={{
@@ -171,7 +172,7 @@ export default function EditorPanelSoap({
                   lineHeight: '1.4',
                   boxSizing: 'border-box',
                 }}
-                onChange={(e) => handleRowFieldChange(rIndex, 'progression', e.target.value)}
+                onChange={(val) => handleRowFieldChange(rIndex, 'progression', val)}
               />
             </div>
 
@@ -179,8 +180,8 @@ export default function EditorPanelSoap({
               <label style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '4px' }}>
                 Chỉ định (Cận lâm sàng, Đơn thuốc, Chế độ ăn & Chăm sóc)
               </label>
-              <textarea
-                rows={8}
+              <AutoExpandTextarea
+                minRows={6}
                 value={row.orders}
                 placeholder="Nhập chỉ định CLS, thuốc tiêm/truyền, chế độ ăn, theo dõi..."
                 style={{
@@ -192,7 +193,7 @@ export default function EditorPanelSoap({
                   lineHeight: '1.4',
                   boxSizing: 'border-box',
                 }}
-                onChange={(e) => handleRowFieldChange(rIndex, 'orders', e.target.value)}
+                onChange={(val) => handleRowFieldChange(rIndex, 'orders', val)}
               />
             </div>
           </div>
@@ -226,5 +227,41 @@ export default function EditorPanelSoap({
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Textarea tự động co giãn chiều cao theo số lượng chữ (không cần kéo tay)
+ */
+function AutoExpandTextarea({
+  value,
+  placeholder,
+  onChange,
+  minRows = 2,
+  style,
+}: {
+  value: string;
+  placeholder?: string;
+  onChange: (val: string) => void;
+  minRows?: number;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = `${Math.max(ref.current.scrollHeight + 2, minRows * 22)}px`;
+    }
+  }, [value, minRows]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      placeholder={placeholder}
+      style={{ resize: 'vertical', ...style }}
+      onChange={(e) => onChange(e.target.value)}
+    />
   );
 }

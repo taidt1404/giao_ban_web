@@ -1003,7 +1003,14 @@ export default function App() {
               <FreeTextSlidePreview data={currentFreeSlide} />
             )}
             {isSoapSlide && currentSoapSlide && (
-              <SoapSlidePreview data={currentSoapSlide} />
+              <SoapSlidePreview
+                data={currentSoapSlide}
+                onChange={
+                  isFullscreen
+                    ? undefined
+                    : (next) => handleUpdateSoapSlide(soapIndex, next)
+                }
+              />
             )}
             {isMonitoringSlide && (
               <MonitoringSlidePreview data={monitoring} />

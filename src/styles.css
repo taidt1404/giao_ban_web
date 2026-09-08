@@ -497,6 +497,36 @@ button { cursor: pointer; }
   word-break: break-word;
 }
 
+.soap-header-input {
+  font-family: "Times New Roman", Times, serif;
+  font-size: clamp(16px, 1.8vw, 24px);
+  font-weight: bold;
+  color: #111;
+  text-align: center;
+  border: 2px solid #2f73da;
+  border-radius: 6px;
+  padding: 4px 12px;
+  width: 70%;
+  outline: none;
+  background: #ffffff;
+}
+
+.soap-table td.editable-cell {
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.soap-table td.editable-cell:hover {
+  background-color: #f0f7ff;
+}
+
+.soap-table td.editable-cell.is-editing {
+  padding: 2px !important;
+  background-color: #ffffff;
+}
+
+
 .freetext-content-area {
   display: flex;
   flex-direction: column;
@@ -1279,7 +1309,8 @@ button { cursor: pointer; }
   z-index: 5;
 }
 
-.case-data-table tr.case-table-row:hover .row-delete-hover-btn {
+.case-data-table tr.case-table-row:hover .row-delete-hover-btn,
+.soap-table tr.soap-table-row:hover .row-delete-hover-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
