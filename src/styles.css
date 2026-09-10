@@ -1451,22 +1451,38 @@ button {
   padding: 17px 22px;
 }
 
-/* Slide SOAP: Ca bệnh lâm sàng */
+/* Slide SOAP: Ca bệnh lâm sàng (giữ vừa để không tràn mất tiêu đề vì slide khóa 16:9) */
+.app-shell.presentation-mode .slide-soap {
+  padding: 18px 28px;
+  overflow: hidden;
+}
+
+.app-shell.presentation-mode .soap-slide-header {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.app-shell.presentation-mode .soap-table-wrap {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .app-shell.presentation-mode .soap-patient-header {
-  font-size: clamp(27px, 3vw, 42px);
-  margin-bottom: 10px;
+  font-size: clamp(21px, 2.2vw, 30px);
+  line-height: 1.25;
+  margin-bottom: 0;
 }
 
 .app-shell.presentation-mode .soap-table {
-  font-size: clamp(19px, 1.9vw, 26px);
+  font-size: clamp(14px, 1.4vw, 18.5px);
 }
 
 .app-shell.presentation-mode .soap-table td {
-  padding: 11px 14px;
+  padding: 7px 10px;
 }
 
 .app-shell.presentation-mode .soap-text-block {
-  line-height: 1.5;
+  line-height: 1.42;
 }
 
 /* Slide 9: Ca bệnh dạng bảng 6 cột */
