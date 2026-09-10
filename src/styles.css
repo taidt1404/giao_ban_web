@@ -1379,20 +1379,20 @@ button {
    ============================================================ */
 /* Slide 1: Thông tin kíp trực */
 .app-shell.presentation-mode .hospital-heading {
-  font-size: clamp(20px, 2.3vw, 32px);
+  font-size: clamp(24px, 2.9vw, 44px);
 }
 
 .app-shell.presentation-mode .report-title {
-  font-size: clamp(26px, 2.7vw, 38px);
+  font-size: clamp(30px, 3.4vw, 52px);
 }
 
 .app-shell.presentation-mode .report-date {
-  font-size: clamp(21px, 2.2vw, 31px);
+  font-size: clamp(25px, 2.8vw, 42px);
 }
 
 .app-shell.presentation-mode .staff-list {
-  font-size: clamp(18px, 1.95vw, 27px);
-  line-height: 1.48;
+  font-size: clamp(22px, 2.5vw, 36px);
+  line-height: 1.5;
 }
 
 /* Tiêu đề chung các Slide 2, 3, 4, 5, 8, 9 */
@@ -1402,81 +1402,81 @@ button {
 .app-shell.presentation-mode .freetext-slide-title,
 .app-shell.presentation-mode .monitoring-slide-title,
 .app-shell.presentation-mode .case-table-title {
-  font-size: clamp(23px, 2.5vw, 34px);
+  font-size: clamp(27px, 3.1vw, 45px);
   margin-bottom: 14px;
 }
 
 /* Slide 2: Ngoại trú */
 .app-shell.presentation-mode .outpatient-table {
-  font-size: clamp(13.5px, 1.35vw, 18px);
+  font-size: clamp(17px, 1.8vw, 24px);
 }
 
 .app-shell.presentation-mode .outpatient-table td {
-  padding: 5px 8px;
-  line-height: 1.32;
+  padding: 6px 8px;
+  line-height: 1.35;
 }
 
 /* Slide 3: Khám ngoài giờ */
 .app-shell.presentation-mode .afterhours-table {
-  font-size: clamp(16px, 1.6vw, 22px);
+  font-size: clamp(20px, 2.1vw, 29px);
 }
 
 .app-shell.presentation-mode .afterhours-table td {
-  padding: 10px 18px;
+  padding: 11px 18px;
 }
 
 /* Slide 4: Nội trú */
 .app-shell.presentation-mode .inpatient-table {
-  font-size: clamp(15px, 1.5vw, 20px);
+  font-size: clamp(19px, 1.95vw, 27px);
 }
 
 .app-shell.presentation-mode .inpatient-table th,
 .app-shell.presentation-mode .inpatient-table td {
-  padding: 8px 6px;
+  padding: 9px 6px;
 }
 
 /* Slide 5, 6, 7: Văn bản tự do */
 .app-shell.presentation-mode .freetext-content-area {
-  font-size: clamp(18px, 1.8vw, 24px);
-  line-height: 1.6;
+  font-size: clamp(22px, 2.3vw, 32px);
+  line-height: 1.62;
 }
 
 /* Slide 8: Bệnh nhân theo dõi */
 .app-shell.presentation-mode .monitoring-table {
-  font-size: clamp(17px, 1.75vw, 23px);
+  font-size: clamp(21px, 2.25vw, 30px);
 }
 
 .app-shell.presentation-mode .monitoring-table th,
 .app-shell.presentation-mode .monitoring-table td {
-  padding: 16px 20px;
+  padding: 17px 22px;
 }
 
 /* Slide SOAP: Ca bệnh lâm sàng */
 .app-shell.presentation-mode .soap-patient-header {
-  font-size: clamp(23px, 2.4vw, 32px);
+  font-size: clamp(27px, 3vw, 42px);
   margin-bottom: 10px;
 }
 
 .app-shell.presentation-mode .soap-table {
-  font-size: clamp(15px, 1.45vw, 19.5px);
+  font-size: clamp(19px, 1.9vw, 26px);
 }
 
 .app-shell.presentation-mode .soap-table td {
-  padding: 10px 14px;
+  padding: 11px 14px;
 }
 
 .app-shell.presentation-mode .soap-text-block {
-  line-height: 1.48;
+  line-height: 1.5;
 }
 
 /* Slide 9: Ca bệnh dạng bảng 6 cột */
 .app-shell.presentation-mode .case-data-table {
-  font-size: clamp(15px, 1.45vw, 18.5px);
+  font-size: clamp(19px, 1.9vw, 25px);
 }
 
 .app-shell.presentation-mode .case-data-table td {
-  padding: 10px 10px;
-  line-height: 1.42;
+  padding: 11px 10px;
+  line-height: 1.45;
 }
 
 /* Nút nổi thoát trình chiếu */
