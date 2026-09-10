@@ -1468,17 +1468,17 @@ button {
 }
 
 .app-shell.presentation-mode .soap-patient-header {
-  font-size: clamp(21px, 2.2vw, 30px);
+  font-size: clamp(22px, 2.4vw, 32px);
   line-height: 1.25;
   margin-bottom: 0;
 }
 
 .app-shell.presentation-mode .soap-table {
-  font-size: clamp(14px, 1.4vw, 18.5px);
+  font-size: clamp(15px, 1.55vw, 20px);
 }
 
 .app-shell.presentation-mode .soap-table td {
-  padding: 7px 10px;
+  padding: 8px 11px;
 }
 
 .app-shell.presentation-mode .soap-text-block {
@@ -1490,7 +1490,13 @@ button {
   font-size: clamp(19px, 1.9vw, 25px);
 }
 
+.app-shell.presentation-mode .case-data-table th {
+  font-size: clamp(17px, 1.8vw, 23px);
+  padding: 11px 8px;
+}
+
 .app-shell.presentation-mode .case-data-table td {
+  font-size: clamp(17px, 1.8vw, 23px);
   padding: 11px 10px;
   line-height: 1.45;
 }
