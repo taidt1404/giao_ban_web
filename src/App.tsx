@@ -239,8 +239,13 @@ export default function App() {
     if (!isFullscreen) return;
 
     function handleMouseDown(e: MouseEvent) {
+      const target = e.target as HTMLElement;
       // Bỏ qua nếu click vào nút thoát trình chiếu
-      if ((e.target as HTMLElement).closest('.exit-presentation-btn')) {
+      if (target.closest('.exit-presentation-btn')) {
+        return;
+      }
+      // Bỏ qua nếu click lên thanh cuộn (ngoài slide) để còn kéo cuộn đọc tiếp
+      if (!target.closest('.slide-wrap')) {
         return;
       }
 

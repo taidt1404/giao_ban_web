@@ -1356,21 +1356,27 @@ button {
 }
 
 .app-shell.presentation-mode .canvas-scroll {
-  padding: 0;
+  padding: 3vh 0;
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .app-shell.presentation-mode .slide-wrap {
   width: min(94vw, calc(94vh * 16 / 9));
   max-width: 1700px;
+  margin: auto;
 }
 
 .app-shell.presentation-mode .slide {
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+  /* Slide vừa giữ tỉ lệ 16:9, slide dài tự cao thêm để cuộn đọc tiếp */
+  aspect-ratio: auto;
+  min-height: calc(min(94vw, 167vh) * 9 / 16);
 }
 
 /* ============================================================
@@ -1454,7 +1460,7 @@ button {
 /* Slide SOAP: Ca bệnh lâm sàng (giữ vừa để không tràn mất tiêu đề vì slide khóa 16:9) */
 .app-shell.presentation-mode .slide-soap {
   padding: 18px 28px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .app-shell.presentation-mode .soap-slide-header {
@@ -1464,7 +1470,7 @@ button {
 
 .app-shell.presentation-mode .soap-table-wrap {
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .app-shell.presentation-mode .soap-patient-header {
