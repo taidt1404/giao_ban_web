@@ -1310,7 +1310,7 @@ export async function downloadGiaoBanWord(
   }
 
   // ==========================================
-  // PHẦN CHỮ KÝ 2 BÊN (CUỐI TÀI LIỆU)
+  // PHẦN CHỮ KÝ (CUỐI TÀI LIỆU)
   // ==========================================
   docChildren.push(
     new Paragraph({ text: '', spacing: { before: 280, after: 120 } }),
@@ -1323,30 +1323,7 @@ export async function downloadGiaoBanWord(
             new TableCell({
               width: { size: 50, type: WidthType.PERCENTAGE },
               borders: cellNoBorders,
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({
-                      text: 'NGƯỜI BÁO CÁO',
-                      bold: true,
-                      font: FONT_FAMILY,
-                      size: 24,
-                    }),
-                  ],
-                }),
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({
-                      text: '(Ký, ghi rõ họ tên)',
-                      italics: true,
-                      font: FONT_FAMILY,
-                      size: 20,
-                    }),
-                  ],
-                }),
-              ],
+              children: [new Paragraph({ text: '' })],
             }),
             new TableCell({
               width: { size: 50, type: WidthType.PERCENTAGE },
@@ -1365,9 +1342,10 @@ export async function downloadGiaoBanWord(
                 }),
                 new Paragraph({
                   alignment: AlignmentType.CENTER,
+                  spacing: { before: 40, after: 40 },
                   children: [
                     new TextRun({
-                      text: 'LÃNH ĐẠO TRỰC BỆNH VIỆN',
+                      text: 'TRƯỞNG PHIÊN THƯỜNG TRỰC',
                       bold: true,
                       font: FONT_FAMILY,
                       size: 24,
@@ -1378,7 +1356,7 @@ export async function downloadGiaoBanWord(
                   alignment: AlignmentType.CENTER,
                   children: [
                     new TextRun({
-                      text: '(Ký, đóng dấu / ghi rõ họ tên)',
+                      text: '(Ký, ghi rõ họ tên)',
                       italics: true,
                       font: FONT_FAMILY,
                       size: 20,
