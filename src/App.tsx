@@ -13,7 +13,9 @@ import {
   PlusCircle,
   Stethoscope,
   TableProperties,
+  Lock,
 } from 'lucide-react';
+import PastDateWarningBanner from './components/PastDateWarningBanner';
 import EditorPanel from './components/EditorPanel';
 import EditorPanel2 from './components/EditorPanel2';
 import EditorPanel3 from './components/EditorPanel3';
@@ -81,6 +83,7 @@ import {
   apiGetServerBundle,
   apiSyncLocalToServer,
   ensureOutpatientClinics,
+  getTodayString,
 } from './utils/dailyStorage';
 import DateSelectorBar from './components/DateSelectorBar';
 import UninitializedDateModal from './components/UninitializedDateModal';
@@ -92,6 +95,10 @@ const initialBundle = initialLoad.bundle;
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState<string>(initialBundle.date);
+  const [isDateLocked, setIsDateLocked] = useState<boolean>(
+    () => initialBundle.date < getTodayString(),
+  );
+  const isPastDate = currentDate < getTodayString();
   const [savedDates, setSavedDates] = useState<string[]>(getSavedDateList);
   const [uninitModal, setUninitModal] = useState<{
     isOpen: boolean;
@@ -323,6 +330,12 @@ export default function App() {
   }, [currentDate, applyBundleToStates]);
 
   function handleSave() {
+    if (isDateLocked) {
+      alert(
+        'Báo cáo của ngày cũ đang ở chế độ khóa bảo vệ.\n\nVui lòng bấm "Mở khóa chỉnh sửa" ở thanh cảnh báo phía trên trước khi lưu!',
+      );
+      return;
+    }
     const bundle = getCurrentBundle();
     saveDailyBundle(bundle);
     setSavedDates(getSavedDateList());
@@ -340,9 +353,15 @@ export default function App() {
   // Xử lý chọn ngày từ DateSelectorBar
   const handleSelectDate = useCallback(
     async (newDateStr: string) => {
-      // Tự động lưu ngày hiện tại trước khi chuyển
-      const currentBundle = getCurrentBundle();
-      saveDailyBundle(currentBundle);
+      // Tự động lưu ngày hiện tại trước khi chuyển (chỉ lưu nếu ngày hiện tại KHÔNG bị khóa)
+      if (!isDateLocked) {
+        const currentBundle = getCurrentBundle();
+        saveDailyBundle(currentBundle);
+      }
+
+      // Đặt lại trạng thái khóa cho ngày mới
+      const newIsPast = newDateStr < getTodayString();
+      setIsDateLocked(newIsPast);
 
       // 1. Ưu tiên tải dữ liệu từ Máy chủ LAN trước
       let loadedBundle: DailyGiaoBanBundle | null = null;
@@ -383,7 +402,7 @@ export default function App() {
         });
       }
     },
-    [getCurrentBundle, applyBundleToStates],
+    [isDateLocked, getCurrentBundle, applyBundleToStates],
   );
 
   // Modal: Xác nhận sao chép từ ngày cũ
@@ -397,6 +416,7 @@ export default function App() {
       applyBundleToStates(cloned);
       setCurrentDate(targetDate);
       setActiveDate(targetDate);
+      setIsDateLocked(targetDate < getTodayString());
       setSavedDates(getSavedDateList());
       setSavedAt(`Đã kế thừa từ ngày ${formatDisplayDate(sourceDate)}`);
       setUninitModal(null);
@@ -413,6 +433,7 @@ export default function App() {
     applyBundleToStates(defaultBundle);
     setCurrentDate(targetDate);
     setActiveDate(targetDate);
+    setIsDateLocked(targetDate < getTodayString());
     setSavedDates(getSavedDateList());
     setSavedAt(`Ngày mới (${formatDisplayDate(targetDate)}) - Mặc định`);
     setUninitModal(null);
@@ -422,16 +443,19 @@ export default function App() {
   const handleCloneCurrentToDate = useCallback(
     (targetDate: string) => {
       const currentBundle = getCurrentBundle();
-      saveDailyBundle(currentBundle);
+      if (!isDateLocked) {
+        saveDailyBundle(currentBundle);
+      }
       const cloned = cloneBundleToDate(currentBundle, targetDate);
       saveDailyBundle(cloned);
       applyBundleToStates(cloned);
       setCurrentDate(targetDate);
       setActiveDate(targetDate);
+      setIsDateLocked(targetDate < getTodayString());
       setSavedDates(getSavedDateList());
       setSavedAt(`Đã sao chép sang ngày ${formatDisplayDate(targetDate)}`);
     },
-    [getCurrentBundle, applyBundleToStates],
+    [isDateLocked, getCurrentBundle, applyBundleToStates],
   );
 
   // Sao lưu toàn bộ JSON
@@ -464,6 +488,12 @@ export default function App() {
   );
 
   function handleReset() {
+    if (isDateLocked) {
+      alert(
+        'Báo cáo của ngày cũ đang ở chế độ khóa bảo vệ.\n\nVui lòng bấm "Mở khóa chỉnh sửa" ở thanh cảnh báo phía trên nếu bạn muốn khôi phục mẫu!',
+      );
+      return;
+    }
     if (window.confirm('Bạn có chắc muốn khôi phục về dữ liệu mẫu mặc định của trang này?')) {
       if (activeSlide === 1) {
         setReport(defaultReport);
@@ -706,16 +736,43 @@ export default function App() {
             isExporting={isExporting}
             totalSlideCount={totalSlideCount}
           />
-          <button className="secondary-button" onClick={handleReset}>
+          <button
+            className="secondary-button"
+            onClick={handleReset}
+            disabled={isDateLocked}
+            title={
+              isDateLocked
+                ? 'Báo cáo ngày cũ đang khóa, hãy mở khóa nếu muốn khôi phục mẫu'
+                : 'Khôi phục về dữ liệu mẫu'
+            }
+          >
             <RotateCcw size={16} />
             Khôi phục mẫu
           </button>
-          <button className="primary-button" onClick={handleSave}>
+          <button
+            className="primary-button"
+            onClick={handleSave}
+            disabled={isDateLocked}
+            title={
+              isDateLocked
+                ? 'Báo cáo ngày cũ đang khóa, hãy bấm Mở khóa ở trên để lưu'
+                : 'Lưu báo cáo vào máy chủ'
+            }
+          >
             <Save size={16} />
             Lưu báo cáo
           </button>
         </div>
       </header>
+
+      {isPastDate && (
+        <PastDateWarningBanner
+          currentDate={currentDate}
+          isLocked={isDateLocked}
+          onUnlock={() => setIsDateLocked(false)}
+          onLock={() => setIsDateLocked(true)}
+        />
+      )}
 
       <main className={`workspace ${isEditorCollapsed ? 'editor-collapsed' : ''}`}>
         <aside className="slide-sidebar">
@@ -1010,7 +1067,7 @@ export default function App() {
               <Slide4Preview
                 data={inpatient}
                 currentDate={currentDate}
-                onChange={isFullscreen ? undefined : setInpatient}
+                onChange={isFullscreen || isDateLocked ? undefined : setInpatient}
               />
             )}
             {isFreeTextSlide && currentFreeSlide && (
@@ -1020,7 +1077,7 @@ export default function App() {
               <SoapSlidePreview
                 data={currentSoapSlide}
                 onChange={
-                  isFullscreen
+                  isFullscreen || isDateLocked
                     ? undefined
                     : (next) => handleUpdateSoapSlide(soapIndex, next)
                 }
@@ -1033,7 +1090,7 @@ export default function App() {
               <PatientCaseTableSlidePreview
                 data={currentCaseTableSlide}
                 onChange={
-                  isFullscreen
+                  isFullscreen || isDateLocked
                     ? undefined
                     : (next) => handleUpdateCaseTableSlide(caseTableIndex, next)
                 }
@@ -1042,7 +1099,13 @@ export default function App() {
           </div>
         </section>
 
-        <aside className="right-panel">
+        <aside className={`right-panel ${isDateLocked ? 'is-locked' : ''}`}>
+          {isDateLocked && (
+            <div className="panel-lock-notice">
+              <Lock size={14} />
+              <span>Đang khóa chỉnh sửa — Bấm &ldquo;Mở khóa chỉnh sửa&rdquo; ở thanh trên để sửa</span>
+            </div>
+          )}
           {activeSlide === 1 && <EditorPanel report={report} onChange={setReport} />}
           {activeSlide === 2 && <EditorPanel2 data={outpatient} onChange={setOutpatient} />}
           {activeSlide === 3 && <EditorPanel3 data={afterHours} onChange={setAfterHours} />}
