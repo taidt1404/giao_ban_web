@@ -231,7 +231,24 @@ export function ensureDefaultFreeTextSlides(bundle: DailyGiaoBanBundle): void {
 }
 
 export function ensureOutpatientClinics(outpatient: OutpatientReportData): void {
-  if (!outpatient || !Array.isArray(outpatient.internalClinics)) return;
+  if (!outpatient) return;
+
+  if (!outpatient.general) {
+    outpatient.general = { ...defaultOutpatientReport.general };
+  } else {
+    if (outpatient.general.hepatitisB === undefined) {
+      outpatient.general.hepatitisB = 0;
+    }
+    if (!Array.isArray(outpatient.general.customStats)) {
+      outpatient.general.customStats = [];
+    }
+  }
+
+  if (!Array.isArray(outpatient.specialtyClinics)) {
+    outpatient.specialtyClinics = [...defaultOutpatientReport.specialtyClinics];
+  }
+
+  if (!Array.isArray(outpatient.internalClinics)) return;
 
   // Danh sách chuẩn thứ tự các phòng khám Nội theo yêu cầu
   const standardOrder = [
@@ -240,6 +257,7 @@ export function ensureOutpatientClinics(outpatient: OutpatientReportData): void 
     { id: 'pk204', name: 'PK 204' },
     { id: 'pk205', name: 'PK 205' },
     { id: 'pk210', name: 'PK 210' },
+    { id: 'pk307', name: 'PK 307' },
     { id: 'pk308', name: 'PK 308' },
     { id: 'pk309', name: 'PK 309' },
   ];
@@ -502,6 +520,12 @@ export function cloneBundleToDate(
     total: 0,
     admitted: 0,
   }));
+  if (Array.isArray(cloned.outpatient.general?.customStats)) {
+    cloned.outpatient.general.customStats = cloned.outpatient.general.customStats.map((s) => ({
+      ...s,
+      value: 0,
+    }));
+  }
 
   // 2. Reset khám ngoài giờ
   cloned.afterHours = {

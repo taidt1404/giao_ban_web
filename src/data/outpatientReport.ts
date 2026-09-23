@@ -3,6 +3,13 @@ export type ClinicItem = {
   name: string;
   total: number;
   admitted: number;
+  isCustom?: boolean;
+};
+
+export type CustomGeneralStatItem = {
+  id: string;
+  name: string;
+  value: number;
 };
 
 export type OutpatientGeneralStats = {
@@ -13,8 +20,10 @@ export type OutpatientGeneralStats = {
   diabetes: number;
   hypertension: number;
   copd: number;
+  hepatitisB?: number;
   traditionalRehab: number;
   transferred: number;
+  customStats?: CustomGeneralStatItem[];
 };
 
 export type OutpatientReportData = {
@@ -40,8 +49,10 @@ export const defaultOutpatientReport: OutpatientReportData = {
     diabetes: 32,
     hypertension: 34,
     copd: 2,
+    hepatitisB: 0,
     traditionalRehab: 23,
     transferred: 2,
+    customStats: [],
   },
   internalClinics: [
     { id: 'pk201', name: 'PK 201', total: 12, admitted: 1 },
@@ -49,6 +60,7 @@ export const defaultOutpatientReport: OutpatientReportData = {
     { id: 'pk204', name: 'PK 204', total: 0, admitted: 0 },
     { id: 'pk205', name: 'PK 205', total: 18, admitted: 1 },
     { id: 'pk210', name: 'PK 210', total: 0, admitted: 0 },
+    { id: 'pk307', name: 'PK 307', total: 0, admitted: 0 },
     { id: 'pk308', name: 'PK 308', total: 16, admitted: 1 },
     { id: 'pk309', name: 'PK 309', total: 0, admitted: 0 },
   ],

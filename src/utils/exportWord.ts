@@ -447,10 +447,39 @@ export async function downloadGiaoBanWord(
           }),
         ],
       }),
-      new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        borders: cellGridBorders,
-        rows: [
+      (() => {
+        const leftWordItems: { label: string | string[]; value: string; fontSize?: number }[] = [
+          { label: 'Tổng số/vào viện', value: op.general.totalAndAdmitted },
+          { label: 'Bảo hiểm y tế', value: String(op.general.insurance) },
+          { label: 'Dịch vụ', value: String(op.general.service) },
+          { label: 'Khám yêu cầu', value: String(op.general.onDemand) },
+          { label: 'Đái tháo đường', value: String(op.general.diabetes) },
+          { label: 'Tăng huyết áp', value: String(op.general.hypertension) },
+          { label: 'COPD', value: String(op.general.copd) },
+          { label: 'Viêm Gan B', value: String(op.general.hepatitisB ?? 0) },
+          {
+            label: ['Điều trị ngoại trú', 'YHCT - PHCN'],
+            value: String(op.general.traditionalRehab),
+            fontSize: 18,
+          },
+          { label: 'Chuyển viện', value: String(op.general.transferred) },
+        ];
+
+        if (Array.isArray(op.general.customStats)) {
+          op.general.customStats.forEach((s) => {
+            leftWordItems.push({
+              label: s.name,
+              value: String(s.value),
+            });
+          });
+        }
+
+        const internalCount = op.internalClinics.length;
+        const specialtyCount = op.specialtyClinics.length;
+        const rightRowCount = 1 + internalCount + specialtyCount;
+        const totalWordRows = Math.max(leftWordItems.length, rightRowCount);
+
+        const tableRows: TableRow[] = [
           new TableRow({
             children: [
               createHeaderCell('Nội dung', 18),
@@ -462,10 +491,41 @@ export async function downloadGiaoBanWord(
               createHeaderCell('Tổng %', 14),
             ],
           }),
-          new TableRow({
-            children: [
-              createDataCell('Tổng số/vào viện', 18, { align: AlignmentType.LEFT }),
-              createDataCell(op.general.totalAndAdmitted, 12),
+        ];
+
+        for (let r = 0; r < totalWordRows; r++) {
+          const rowChildren: TableCell[] = [];
+
+          // Cột trái
+          if (r < leftWordItems.length) {
+            rowChildren.push(
+              createDataCell(leftWordItems[r].label, 18, {
+                align: AlignmentType.LEFT,
+                fontSize: leftWordItems[r].fontSize,
+              }),
+              createDataCell(leftWordItems[r].value, 12),
+            );
+          } else if (r === leftWordItems.length && leftWordItems.length < totalWordRows) {
+            rowChildren.push(
+              createDataCell('', 30, {
+                verticalMerge: VerticalMergeType.RESTART,
+                columnSpan: 2,
+                fill: 'CCD7E8',
+              }),
+            );
+          } else {
+            rowChildren.push(
+              createDataCell('', 30, {
+                verticalMerge: VerticalMergeType.CONTINUE,
+                columnSpan: 2,
+                fill: 'CCD7E8',
+              }),
+            );
+          }
+
+          // Cột phải
+          if (r === 0) {
+            rowChildren.push(
               createDataCell('PK Nội', 15, {
                 verticalMerge: VerticalMergeType.RESTART,
                 fill: 'EEF3FA',
@@ -474,288 +534,42 @@ export async function downloadGiaoBanWord(
               createDataCell(String(internalTotal), 14),
               createDataCell(String(internalAdmitted), 14),
               createDataCell(internalRate, 14),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Bảo hiểm y tế', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.insurance), 12),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[0]?.name || 'PK 201', 13),
-              createDataCell(String(op.internalClinics[0]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[0]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[0]?.admitted ?? 0,
-                  op.internalClinics[0]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Dịch vụ', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.service), 12),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[1]?.name || 'PK 202', 13),
-              createDataCell(String(op.internalClinics[1]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[1]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[1]?.admitted ?? 0,
-                  op.internalClinics[1]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Khám yêu cầu', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.onDemand), 12),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[2]?.name || 'PK 204', 13),
-              createDataCell(String(op.internalClinics[2]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[2]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[2]?.admitted ?? 0,
-                  op.internalClinics[2]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Đái tháo đường', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.diabetes), 12),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[3]?.name || 'PK 205', 13),
-              createDataCell(String(op.internalClinics[3]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[3]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[3]?.admitted ?? 0,
-                  op.internalClinics[3]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Tăng huyết áp', 18, {
-                align: AlignmentType.LEFT,
-                verticalMerge: VerticalMergeType.RESTART,
-              }),
-              createDataCell(String(op.general.hypertension), 12, {
-                verticalMerge: VerticalMergeType.RESTART,
-              }),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[4]?.name || 'PK 210', 13),
-              createDataCell(String(op.internalClinics[4]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[4]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[4]?.admitted ?? 0,
-                  op.internalClinics[4]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 18, { verticalMerge: VerticalMergeType.CONTINUE }),
-              createDataCell('', 12, { verticalMerge: VerticalMergeType.CONTINUE }),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[5]?.name || 'PK 308', 13),
-              createDataCell(String(op.internalClinics[5]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[5]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[5]?.admitted ?? 0,
-                  op.internalClinics[5]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 18, { verticalMerge: VerticalMergeType.CONTINUE }),
-              createDataCell('', 12, { verticalMerge: VerticalMergeType.CONTINUE }),
-              createDataCell('', 15, { verticalMerge: VerticalMergeType.CONTINUE, fill: 'EEF3FA' }),
-              createDataCell(op.internalClinics[6]?.name || 'PK 309', 13),
-              createDataCell(String(op.internalClinics[6]?.total ?? 0), 14),
-              createDataCell(String(op.internalClinics[6]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.internalClinics[6]?.admitted ?? 0,
-                  op.internalClinics[6]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('COPD', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.copd), 12),
-              createDataCell(op.specialtyClinics[0]?.name || 'PK Ngoại', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[0]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[0]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[0]?.admitted ?? 0,
-                  op.specialtyClinics[0]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Điều trị ngoại trú\n YHCT - PHCN', 18, {
-                align: AlignmentType.LEFT,
-                fontSize: 18,
-              }),
-              createDataCell(String(op.general.traditionalRehab), 12),
-              createDataCell(op.specialtyClinics[1]?.name || 'Pk Sản', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[1]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[1]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[1]?.admitted ?? 0,
-                  op.specialtyClinics[1]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('Chuyển viện', 18, { align: AlignmentType.LEFT }),
-              createDataCell(String(op.general.transferred), 12),
-              createDataCell(op.specialtyClinics[2]?.name || 'PK Nhi', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[2]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[2]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[2]?.admitted ?? 0,
-                  op.specialtyClinics[2]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 30, {
-                verticalMerge: VerticalMergeType.RESTART,
-                columnSpan: 2,
-                fill: 'CCD7E8',
-              }),
-              createDataCell(op.specialtyClinics[3]?.name || 'Pk TMH', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[3]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[3]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[3]?.admitted ?? 0,
-                  op.specialtyClinics[3]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 30, {
+            );
+          } else if (r >= 1 && r <= internalCount) {
+            const clinic = op.internalClinics[r - 1];
+            rowChildren.push(
+              createDataCell('', 15, {
                 verticalMerge: VerticalMergeType.CONTINUE,
-                columnSpan: 2,
-                fill: 'CCD7E8',
+                fill: 'EEF3FA',
               }),
-              createDataCell(op.specialtyClinics[4]?.name || 'PK Mắt', 15),
+              createDataCell(clinic?.name || '', 13),
+              createDataCell(String(clinic?.total ?? 0), 14),
+              createDataCell(String(clinic?.admitted ?? 0), 14),
+              createDataCell(calculateRate(clinic?.admitted ?? 0, clinic?.total ?? 0), 14),
+            );
+          } else if (r > internalCount && r < rightRowCount) {
+            const spIdx = r - (1 + internalCount);
+            const clinic = op.specialtyClinics[spIdx];
+            rowChildren.push(
+              createDataCell(clinic?.name || '', 15),
               createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[4]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[4]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[4]?.admitted ?? 0,
-                  op.specialtyClinics[4]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 30, {
-                verticalMerge: VerticalMergeType.CONTINUE,
-                columnSpan: 2,
-                fill: 'CCD7E8',
-              }),
-              createDataCell(op.specialtyClinics[5]?.name || 'PK RHM', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[5]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[5]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[5]?.admitted ?? 0,
-                  op.specialtyClinics[5]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 30, {
-                verticalMerge: VerticalMergeType.CONTINUE,
-                columnSpan: 2,
-                fill: 'CCD7E8',
-              }),
-              createDataCell(op.specialtyClinics[6]?.name || 'PK YHCT', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[6]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[6]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[6]?.admitted ?? 0,
-                  op.specialtyClinics[6]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-          new TableRow({
-            children: [
-              createDataCell('', 30, {
-                verticalMerge: VerticalMergeType.CONTINUE,
-                columnSpan: 2,
-                fill: 'CCD7E8',
-              }),
-              createDataCell(op.specialtyClinics[7]?.name || 'PK cấp cứu', 15),
-              createDataCell('', 13),
-              createDataCell(String(op.specialtyClinics[7]?.total ?? 0), 14),
-              createDataCell(String(op.specialtyClinics[7]?.admitted ?? 0), 14),
-              createDataCell(
-                calculateRate(
-                  op.specialtyClinics[7]?.admitted ?? 0,
-                  op.specialtyClinics[7]?.total ?? 0,
-                ),
-                14,
-              ),
-            ],
-          }),
-        ],
-      }),
+              createDataCell(String(clinic?.total ?? 0), 14),
+              createDataCell(String(clinic?.admitted ?? 0), 14),
+              createDataCell(calculateRate(clinic?.admitted ?? 0, clinic?.total ?? 0), 14),
+            );
+          } else {
+            rowChildren.push(createDataCell('', 70, { columnSpan: 5 }));
+          }
+
+          tableRows.push(new TableRow({ children: rowChildren }));
+        }
+
+        return new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: cellGridBorders,
+          rows: tableRows,
+        });
+      })(),
     );
   }
 

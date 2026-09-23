@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   type OutpatientReportData,
   calculateRate,
@@ -6,6 +6,12 @@ import {
 
 type Props = {
   data: OutpatientReportData;
+};
+
+type LeftItem = {
+  label: React.ReactNode;
+  value: string | number;
+  style?: React.CSSProperties;
 };
 
 export default function Slide2Preview({ data }: Props) {
@@ -19,6 +25,48 @@ export default function Slide2Preview({ data }: Props) {
     const rate = calculateRate(admitted, total);
     return { total, admitted, rate };
   }, [data.internalClinics]);
+
+  // Chuẩn bị danh sách hàng cột trái
+  const leftItems = useMemo<LeftItem[]>(() => {
+    const items: LeftItem[] = [
+      { label: 'Tổng số/vào viện', value: data.general.totalAndAdmitted },
+      { label: 'Bảo hiểm y tế', value: data.general.insurance },
+      { label: 'Dịch vụ', value: data.general.service },
+      { label: 'Khám yêu cầu', value: data.general.onDemand },
+      { label: 'Đái tháo đường', value: data.general.diabetes },
+      { label: 'Tăng huyết áp', value: data.general.hypertension },
+      { label: 'COPD', value: data.general.copd },
+      { label: 'Viêm Gan B', value: data.general.hepatitisB ?? 0 },
+      {
+        label: (
+          <span>
+            Điều trị ngoại trú
+            <br />
+            YHCT - PHCN
+          </span>
+        ),
+        value: data.general.traditionalRehab,
+        style: { fontSize: '0.82em', textAlign: 'center' },
+      },
+      { label: 'Chuyển viện', value: data.general.transferred },
+    ];
+
+    if (Array.isArray(data.general.customStats)) {
+      data.general.customStats.forEach((stat) => {
+        items.push({
+          label: stat.name,
+          value: stat.value,
+        });
+      });
+    }
+
+    return items;
+  }, [data.general]);
+
+  const internalCount = data.internalClinics.length;
+  const specialtyCount = data.specialtyClinics.length;
+  const rightRowsCount = 1 + internalCount + specialtyCount;
+  const totalRows = Math.max(leftItems.length, rightRowsCount);
 
   return (
     <div className="slide-wrap">
@@ -41,242 +89,84 @@ export default function Slide2Preview({ data }: Props) {
               </tr>
             </thead>
             <tbody>
-              {/* Hàng 1: Tổng số/vào viện & Dòng Tổng PK Nội */}
-              <tr>
-                <td className="cell-label font-bold">Tổng số/vào viện</td>
-                <td className="cell-value font-bold">{data.general.totalAndAdmitted}</td>
-                <td rowSpan={8} className="cell-group font-bold">
-                  PK Nội
-                </td>
-                <td className="cell-clinic font-bold">Tổng</td>
-                <td className="cell-value font-bold">{internalSummary.total}</td>
-                <td className="cell-value font-bold">{internalSummary.admitted}</td>
-                <td className="cell-value font-bold">{internalSummary.rate}</td>
-              </tr>
+              {Array.from({ length: totalRows }).map((_, r) => {
+                // Cột trái
+                let leftCells: React.ReactNode = null;
+                if (r < leftItems.length) {
+                  const item = leftItems[r];
+                  leftCells = (
+                    <>
+                      <td className="cell-label font-bold" style={item.style}>
+                        {item.label}
+                      </td>
+                      <td className="cell-value font-bold">{item.value}</td>
+                    </>
+                  );
+                } else if (r === leftItems.length && leftItems.length < totalRows) {
+                  leftCells = (
+                    <td
+                      rowSpan={totalRows - leftItems.length}
+                      colSpan={2}
+                      className="cell-empty-block"
+                    />
+                  );
+                }
 
-              {/* Hàng 2: Bảo hiểm y tế & PK 201 */}
-              <tr>
-                <td className="cell-label font-bold">Bảo hiểm y tế</td>
-                <td className="cell-value font-bold">{data.general.insurance}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[0]?.name || 'PK 201'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[0]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[0]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[0]?.admitted ?? 0,
-                    data.internalClinics[0]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
+                // Cột phải
+                let rightCells: React.ReactNode = null;
+                if (r === 0) {
+                  // Hàng Tổng PK Nội
+                  rightCells = (
+                    <>
+                      <td rowSpan={1 + internalCount} className="cell-group font-bold">
+                        PK Nội
+                      </td>
+                      <td className="cell-clinic font-bold">Tổng</td>
+                      <td className="cell-value font-bold">{internalSummary.total}</td>
+                      <td className="cell-value font-bold">{internalSummary.admitted}</td>
+                      <td className="cell-value font-bold">{internalSummary.rate}</td>
+                    </>
+                  );
+                } else if (r >= 1 && r <= internalCount) {
+                  // Từng phòng khám Nội
+                  const clinic = data.internalClinics[r - 1];
+                  rightCells = (
+                    <>
+                      <td className="cell-clinic font-bold">{clinic?.name || ''}</td>
+                      <td className="cell-value font-bold">{clinic?.total ?? 0}</td>
+                      <td className="cell-value font-bold">{clinic?.admitted ?? 0}</td>
+                      <td className="cell-value font-bold">
+                        {calculateRate(clinic?.admitted ?? 0, clinic?.total ?? 0)}
+                      </td>
+                    </>
+                  );
+                } else if (r > internalCount && r < rightRowsCount) {
+                  // Các chuyên khoa khác
+                  const spIdx = r - (1 + internalCount);
+                  const clinic = data.specialtyClinics[spIdx];
+                  rightCells = (
+                    <>
+                      <td className="cell-clinic font-bold">{clinic?.name || ''}</td>
+                      <td></td>
+                      <td className="cell-value font-bold">{clinic?.total ?? 0}</td>
+                      <td className="cell-value font-bold">{clinic?.admitted ?? 0}</td>
+                      <td className="cell-value font-bold">
+                        {calculateRate(clinic?.admitted ?? 0, clinic?.total ?? 0)}
+                      </td>
+                    </>
+                  );
+                } else {
+                  // Hàng trống bên phải nếu bên trái dài hơn bên phải
+                  rightCells = <td colSpan={5}></td>;
+                }
 
-              {/* Hàng 3: Dịch vụ & PK 202 */}
-              <tr>
-                <td className="cell-label font-bold">Dịch vụ</td>
-                <td className="cell-value font-bold">{data.general.service}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[1]?.name || 'PK 202'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[1]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[1]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[1]?.admitted ?? 0,
-                    data.internalClinics[1]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 4: Khám yêu cầu & PK 204 */}
-              <tr>
-                <td className="cell-label font-bold">Khám yêu cầu</td>
-                <td className="cell-value font-bold">{data.general.onDemand}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[2]?.name || 'PK 204'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[2]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[2]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[2]?.admitted ?? 0,
-                    data.internalClinics[2]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 5: Đái tháo đường & PK 205 */}
-              <tr>
-                <td className="cell-label font-bold">Đái tháo đường</td>
-                <td className="cell-value font-bold">{data.general.diabetes}</td>
-                <td className="cell-clinic font-bold">{data.internalClinics[3]?.name || 'PK 205'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[3]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[3]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[3]?.admitted ?? 0,
-                    data.internalClinics[3]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 6: Tăng huyết áp (rowSpan 3) & PK 210 */}
-              <tr>
-                <td rowSpan={3} className="cell-label font-bold cell-vcenter">
-                  Tăng huyết áp
-                </td>
-                <td rowSpan={3} className="cell-value font-bold cell-vcenter">
-                  {data.general.hypertension}
-                </td>
-                <td className="cell-clinic font-bold">{data.internalClinics[4]?.name || 'PK 210'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[4]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[4]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[4]?.admitted ?? 0,
-                    data.internalClinics[4]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 7: PK 308 */}
-              <tr>
-                <td className="cell-clinic font-bold">{data.internalClinics[5]?.name || 'PK 308'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[5]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[5]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[5]?.admitted ?? 0,
-                    data.internalClinics[5]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 8: PK 309 */}
-              <tr>
-                <td className="cell-clinic font-bold">{data.internalClinics[6]?.name || 'PK 309'}</td>
-                <td className="cell-value font-bold">{data.internalClinics[6]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.internalClinics[6]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.internalClinics[6]?.admitted ?? 0,
-                    data.internalClinics[6]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 8: COPD & PK Ngoại */}
-              <tr>
-                <td className="cell-label font-bold">COPD</td>
-                <td className="cell-value font-bold">{data.general.copd}</td>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[0]?.name || 'PK Ngoại'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[0]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[0]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[0]?.admitted ?? 0,
-                    data.specialtyClinics[0]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 9: Điều trị ngoại trú YHCT - PHCN & Pk Sản */}
-              <tr>
-                <td className="cell-label font-bold text-center" style={{ fontSize: '0.82em' }}>
-                  Điều trị ngoại trú
-                  <br />
-                  YHCT - PHCN
-                </td>
-                <td className="cell-value font-bold">{data.general.traditionalRehab}</td>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[1]?.name || 'Pk Sản'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[1]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[1]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[1]?.admitted ?? 0,
-                    data.specialtyClinics[1]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 10: Chuyển viện & PK Nhi */}
-              <tr>
-                <td className="cell-label font-bold">Chuyển viện</td>
-                <td className="cell-value font-bold">{data.general.transferred}</td>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[2]?.name || 'PK Nhi'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[2]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[2]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[2]?.admitted ?? 0,
-                    data.specialtyClinics[2]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              {/* Hàng 11..15: Bên trái trống (rowSpan 5), bên phải lần lượt TMH, Mắt, RHM, YHCT, Cấp cứu */}
-              <tr>
-                <td rowSpan={5} colSpan={2} className="cell-empty-block"></td>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[3]?.name || 'Pk TMH'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[3]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[3]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[3]?.admitted ?? 0,
-                    data.specialtyClinics[3]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              <tr>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[4]?.name || 'PK Mắt'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[4]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[4]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[4]?.admitted ?? 0,
-                    data.specialtyClinics[4]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              <tr>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[5]?.name || 'PK RHM'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[5]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[5]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[5]?.admitted ?? 0,
-                    data.specialtyClinics[5]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              <tr>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[6]?.name || 'PK YHCT'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[6]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[6]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[6]?.admitted ?? 0,
-                    data.specialtyClinics[6]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
-
-              <tr>
-                <td className="cell-clinic font-bold">{data.specialtyClinics[7]?.name || 'PK cấp cứu'}</td>
-                <td></td>
-                <td className="cell-value font-bold">{data.specialtyClinics[7]?.total ?? 0}</td>
-                <td className="cell-value font-bold">{data.specialtyClinics[7]?.admitted ?? 0}</td>
-                <td className="cell-value font-bold">
-                  {calculateRate(
-                    data.specialtyClinics[7]?.admitted ?? 0,
-                    data.specialtyClinics[7]?.total ?? 0,
-                  )}
-                </td>
-              </tr>
+                return (
+                  <tr key={r}>
+                    {leftCells}
+                    {rightCells}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
