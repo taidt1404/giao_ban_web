@@ -456,7 +456,7 @@ export async function downloadGiaoBanWord(
           { label: 'Đái tháo đường', value: String(op.general.diabetes) },
           { label: 'Tăng huyết áp', value: String(op.general.hypertension) },
           { label: 'COPD', value: String(op.general.copd) },
-          { label: 'Viêm Gan B', value: String(op.general.hepatitisB ?? 0) },
+          { label: 'Viêm Gan B, C', value: String(op.general.hepatitisB ?? 0) },
           {
             label: ['Điều trị ngoại trú', 'YHCT - PHCN'],
             value: String(op.general.traditionalRehab),

@@ -245,7 +245,7 @@ export default function EditorPanel2({ data, onChange }: Props) {
             />
           </div>
           <div className="field-group">
-            <label>Viêm Gan B</label>
+            <label>Viêm Gan B, C</label>
             <input
               type="number"
               min="0"

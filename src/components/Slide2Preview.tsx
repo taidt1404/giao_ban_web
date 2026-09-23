@@ -36,7 +36,7 @@ export default function Slide2Preview({ data }: Props) {
       { label: 'Đái tháo đường', value: data.general.diabetes },
       { label: 'Tăng huyết áp', value: data.general.hypertension },
       { label: 'COPD', value: data.general.copd },
-      { label: 'Viêm Gan B', value: data.general.hepatitisB ?? 0 },
+      { label: 'Viêm Gan B, C', value: data.general.hepatitisB ?? 0 },
       {
         label: (
           <span>
