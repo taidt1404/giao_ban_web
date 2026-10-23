@@ -22,6 +22,8 @@ import {
   type AfterHoursReportData,
   calculatePrescriptionsTotal,
   calculateTotalExams,
+  getPrescriptionsTotal,
+  getTotalExams,
 } from '../data/afterHoursReport';
 import {
   type InpatientReportData,
@@ -578,8 +580,8 @@ export async function downloadGiaoBanWord(
   // ==========================================
   if (afterHours) {
     const ah = afterHours;
-    const prescriptionsTotal = calculatePrescriptionsTotal(ah.details);
-    const totalExams = calculateTotalExams(ah);
+    const prescriptionsTotal = getPrescriptionsTotal(ah);
+    const totalExams = getTotalExams(ah);
 
     if (!continuous) {
       docChildren.push(

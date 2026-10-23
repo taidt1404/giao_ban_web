@@ -529,8 +529,10 @@ export function cloneBundleToDate(
 
   // 2. Reset khám ngoài giờ
   cloned.afterHours = {
+    totalExams: 0,
     admitted: 0,
     transferred: 0,
+    prescriptions: 0,
     details: {
       digestiveAndUrinary: 0,
       respiratoryAndFever: 0,

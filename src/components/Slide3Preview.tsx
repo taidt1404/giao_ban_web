@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import {
   type AfterHoursReportData,
-  calculatePrescriptionsTotal,
-  calculateTotalExams,
+  getPrescriptionsTotal,
+  getTotalExams,
 } from '../data/afterHoursReport';
 
 type Props = {
@@ -11,11 +11,11 @@ type Props = {
 
 export default function Slide3Preview({ data }: Props) {
   const prescriptionsTotal = useMemo(
-    () => calculatePrescriptionsTotal(data.details),
-    [data.details],
+    () => getPrescriptionsTotal(data),
+    [data],
   );
   const totalExams = useMemo(
-    () => calculateTotalExams(data),
+    () => getTotalExams(data),
     [data],
   );
 

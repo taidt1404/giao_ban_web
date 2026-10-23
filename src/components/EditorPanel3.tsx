@@ -3,6 +3,8 @@ import {
   type AfterHoursDetail,
   calculatePrescriptionsTotal,
   calculateTotalExams,
+  getPrescriptionsTotal,
+  getTotalExams,
 } from '../data/afterHoursReport';
 
 type Props = {
@@ -11,10 +13,13 @@ type Props = {
 };
 
 export default function EditorPanel3({ data, onChange }: Props) {
-  const prescriptionsTotal = calculatePrescriptionsTotal(data.details);
-  const totalExams = calculateTotalExams(data);
+  const currentPrescriptions = getPrescriptionsTotal(data);
+  const currentTotalExams = getTotalExams(data);
 
-  function handleMainChange(field: 'admitted' | 'transferred', value: string) {
+  function handleMainChange(
+    field: 'admitted' | 'transferred' | 'totalExams' | 'prescriptions',
+    value: string,
+  ) {
     const num = parseInt(value, 10) || 0;
     onChange({
       ...data,
@@ -33,6 +38,16 @@ export default function EditorPanel3({ data, onChange }: Props) {
     });
   }
 
+  function handleAutoCalculate() {
+    const rx = calculatePrescriptionsTotal(data.details);
+    const total = (Number(data.admitted) || 0) + (Number(data.transferred) || 0) + rx;
+    onChange({
+      ...data,
+      totalExams: total,
+      prescriptions: rx,
+    });
+  }
+
   return (
     <section className="editor-panel">
       <div className="panel-header">
@@ -40,40 +55,31 @@ export default function EditorPanel3({ data, onChange }: Props) {
           <span className="eyebrow">NỘI DUNG SLIDE 3</span>
           <h2>Khám ngoài giờ</h2>
         </div>
-        <span className="badge">Tự động cộng dồn</span>
+        <span className="badge">Nhập tay tự do</span>
       </div>
 
       <div className="accordion-group">
-        {/* Tóm tắt tự động */}
-        <div
-          style={{
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            padding: '10px 14px',
-            marginBottom: '16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>TỔNG KHÁM</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#15803d' }}>
-              {totalExams} ca
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '11px', color: '#166534', fontWeight: 700 }}>KÊ ĐƠN</div>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
-              {prescriptionsTotal} ca
-            </div>
-          </div>
-        </div>
-
-        {/* Phần 1: Số ca chung */}
-        <h3 className="section-title">1. Chỉ số cấp cứu / chuyển viện</h3>
+        {/* Phần 1: Số ca chung & Cấp cứu */}
+        <h3 className="section-title">1. Chỉ số chung & Cấp cứu / chuyển viện</h3>
         <div className="form-grid">
+          <div className="field-group">
+            <label style={{ fontWeight: 700, color: '#15803d' }}>Tổng khám</label>
+            <input
+              type="number"
+              min="0"
+              value={data.totalExams ?? currentTotalExams}
+              onChange={(e) => handleMainChange('totalExams', e.target.value)}
+            />
+          </div>
+          <div className="field-group">
+            <label style={{ fontWeight: 700, color: '#16a34a' }}>Kê đơn, trong đó</label>
+            <input
+              type="number"
+              min="0"
+              value={data.prescriptions ?? currentPrescriptions}
+              onChange={(e) => handleMainChange('prescriptions', e.target.value)}
+            />
+          </div>
           <div className="field-group">
             <label>Vào viện</label>
             <input
@@ -92,6 +98,29 @@ export default function EditorPanel3({ data, onChange }: Props) {
               onChange={(e) => handleMainChange('transferred', e.target.value)}
             />
           </div>
+        </div>
+
+        <div style={{ marginTop: '6px', marginBottom: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            style={{
+              fontSize: '11px',
+              padding: '4px 9px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              borderRadius: '6px',
+              border: '1px solid #cbd5e1',
+              background: '#f8fafc',
+              color: '#475569',
+              fontWeight: 500,
+            }}
+            onClick={handleAutoCalculate}
+            title="Tính lại Tổng khám và Kê đơn theo các mục chi tiết bên dưới"
+          >
+            🔄 Tự động tính lại từ chi tiết
+          </button>
         </div>
 
         {/* Phần 2: Chi tiết kê đơn */}
