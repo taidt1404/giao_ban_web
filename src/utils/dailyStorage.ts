@@ -30,6 +30,7 @@ import {
   defaultPatientCaseTableSlides,
   type PatientCaseTableSlideData,
 } from '../data/patientCaseTableReport';
+import { repairVietnameseText } from './repairText';
 
 export type DailyGiaoBanBundle = {
   date: string; // Định dạng "YYYY-MM-DD"
@@ -310,9 +311,15 @@ export function loadDailyBundle(dateStr: string): {
 } {
   try {
     const key = getBundleStorageKey(dateStr);
-    const raw = localStorage.getItem(key);
+    let raw = localStorage.getItem(key);
 
     if (raw) {
+      if (raw.includes('\ufffd')) {
+        raw = repairVietnameseText(raw);
+        try {
+          localStorage.setItem(key, raw);
+        } catch {}
+      }
       const parsed = JSON.parse(raw) as DailyGiaoBanBundle;
       ensureDefaultFreeTextSlides(parsed);
       ensureOutpatientClinics(parsed.outpatient);
@@ -424,6 +431,11 @@ export async function apiGetServerBundle(
     if (!res.ok) return { bundle: null, isExisting: false };
     const json = await res.json();
     if (json?.bundle) {
+      let bundleStr = JSON.stringify(json.bundle);
+      if (bundleStr.includes('\ufffd')) {
+        bundleStr = repairVietnameseText(bundleStr);
+        json.bundle = JSON.parse(bundleStr);
+      }
       ensureDefaultFreeTextSlides(json.bundle);
       ensureOutpatientClinics(json.bundle.outpatient);
     }
